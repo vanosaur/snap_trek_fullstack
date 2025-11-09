@@ -1,11 +1,17 @@
-import dotenv from "dotenv";
-import app from "./app.js";
+import express from "express";
+import cors from "cors";
+import authRoutes from "./routes/authRoutes.js";
 
-dotenv.config();
+const app = express();
+app.use(cors({
+  origin: ["http://localhost:3000", "https://snap-trek-fullstack.vercel.app"],
+  credentials: true,
+}));
+app.use(express.json());
 
-const PORT = process.env.PORT || 8080;
+// ✅ This line matters
+app.use("/api/auth", authRoutes);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+app.listen(process.env.PORT || 8080, () => {
+  console.log("Server running");
 });
-
