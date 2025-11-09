@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import api from "../../utils/api";
+import api from "@/utils/api"; // ✅ absolute path
 
 export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -14,6 +15,7 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await api.post("/auth/signup", form);
       localStorage.setItem("token", res.data.token);
@@ -21,6 +23,8 @@ export default function SignupPage() {
       router.push("/dashboard");
     } catch (err: any) {
       alert(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,6 +35,7 @@ export default function SignupPage() {
         className="bg-white p-8 rounded-2xl shadow-lg w-96"
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Signup</h2>
+
         <input
           type="text"
           name="name"
@@ -40,6 +45,7 @@ export default function SignupPage() {
           className="w-full border p-2 mb-3 rounded"
           required
         />
+
         <input
           type="email"
           name="email"
@@ -49,6 +55,7 @@ export default function SignupPage() {
           className="w-full border p-2 mb-3 rounded"
           required
         />
+
         <input
           type="password"
           name="password"
@@ -58,12 +65,15 @@ export default function SignupPage() {
           className="w-full border p-2 mb-3 rounded"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-70"
         >
-          Signup
+          {loading ? "Signing up..." : "Signup"}
         </button>
+
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
           <a href="/login" className="text-blue-600 hover:underline">
