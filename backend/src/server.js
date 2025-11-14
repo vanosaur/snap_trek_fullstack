@@ -19,13 +19,14 @@ connectDB();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://snap-trek-fullstack.vercel.app",
-    ],
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
+
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
