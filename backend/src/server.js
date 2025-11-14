@@ -16,10 +16,10 @@ const corsOptions = {
 
 // --- 2. Apply Middleware (CRITICAL ORDER) ---
 
-// 1. Handle PREFLIGHT requests
+// 1. Handle PREFLIGHT requests (This is the line we fixed)
 // This explicitly handles the 'OPTIONS' request *before* it hits any
-// other routes. This is the part you were missing.
-app.options('*', cors(corsOptions));
+// other routes. Use '/*' to match all paths.
+app.options('/*', cors(corsOptions)); 
 
 // 2. Apply CORS to all other requests
 // This adds the CORS headers to your actual 'POST', 'GET', etc., responses.
