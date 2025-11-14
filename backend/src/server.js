@@ -6,18 +6,6 @@ import authRoutes from "./routes/authRoutes.js";
 const app = express();
 const prisma = new PrismaClient();
 
-// 🟢 Check Prisma connection
-async function connectDB() {
-  try {
-    await prisma.$connect();
-    console.log("✅ Connected to Aiven MySQL successfully");
-  } catch (err) {
-    console.error("❌ Database connection failed:", err);
-  }
-}
-connectDB();
-
-// ---- FIXED CORS FOR EXPRESS 5 + RAILWAY + MOBILE ----
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -29,6 +17,18 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// 🟢 Check Prisma connection
+async function connectDB() {
+  try {
+    await prisma.$connect();
+    console.log("✅ Connected to Aiven MySQL successfully");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err);
+  }
+}
+connectDB();
+
 
 // No cors() here — manually handling all headers above
 
