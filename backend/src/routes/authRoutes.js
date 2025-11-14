@@ -1,13 +1,11 @@
 import express from "express";
-import cors from "cors"; // <-- 1. Import cors
+import cors from "cors"; // <-- 1. Import
 import { signup, login, profile } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// --- 2. Define Your CORS Options ---
-// You can import this from a shared file or redefine it here.
-// It MUST match what's in server.js
+// --- 2. Define CORS Options ---
 const corsOptions = {
   origin: "https://snap-trek-fullstack.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -15,15 +13,18 @@ const corsOptions = {
   credentials: true
 };
 
-// --- 3. Handle ALL Preflight requests for this router ---
-// This is the critical line. It catches OPTIONS for /signup, /login, etc.
-router.options('*', cors(corsOptions)); // <-- 4. THE FIX
+// --- 3. THE FIX: Apply CORS as router-level middleware ---
+// This one line will:
+//   a) Automatically handle all OPTIONS requests for this router.
+//   b) Add CORS headers to all POST, GET, etc. responses from this router.
+router.use(cors(corsOptions));
 
-// --- 5. Apply CORS to your actual routes ---
-// This ensures the response to the *actual* POST request also
-// has the correct headers.
-router.post("/signup", cors(corsOptions), signup);
-router.post("/login", cors(corsOptions), login);
-router.get("/profile", cors(corsOptions), protect, profile);
+// --- 4. Your Routes (no changes needed) ---
+// You NO LONGER need to add cors() to each individual route.
+// The router.use() above handles all of them.
+
+router.post("/signup", signup);
+router.post("/login", login);
+router.get("/profile", protect, profile);
 
 export default router;
