@@ -23,7 +23,7 @@ app.use(express.json());
 async function connectDB() {
   try {
     await prisma.$connect();
-    console.log("✅ Connected to Aiven MySQL successfully");
+    console.log("✅ Connected to Neon MySQL successfully");
   } catch (err) {
     console.error("❌ Database connection failed:", err);
   }
