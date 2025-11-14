@@ -6,18 +6,31 @@ import authRoutes from "./routes/authRoutes.js";
 const app = express();
 const prisma = new PrismaClient();
 
-// 🧩 CORS FIX FOR EXPRESS 5
-app.use(cors({
+// --- 1. Define CORS Options ---
+const corsOptions = {
   origin: "https://snap-trek-fullstack.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
-}));
+};
 
-// NO app.options("*") HERE — EXPRESS 5 DOES NOT SUPPORT "*"
-// Preflight handled automatically by cors()
+// --- 2. Apply Middleware (CRITICAL ORDER) ---
 
-// Database connect
+// 1. Handle PREFLIGHT requests
+// This explicitly handles the 'OPTIONS' request *before* it hits any
+// other routes. This is the part you were missing.
+app.options('*', cors(corsOptions));
+
+// 2. Apply CORS to all other requests
+// This adds the CORS headers to your actual 'POST', 'GET', etc., responses.
+app.use(cors(corsOptions));
+
+// 3. Body Parser
+// Must come *after* CORS but *before* your routes.
+app.use(express.json());
+
+
+// --- 3. Database Connect ---
 async function connectDB() {
   try {
     await prisma.$connect();
@@ -28,10 +41,14 @@ async function connectDB() {
 }
 connectDB();
 
-app.use(express.json());
+// --- 4. Register Routes (LAST) ---
+// Your routes must be registered *after* all global middleware.
 app.use("/api/auth", authRoutes);
 
-const PORT = process.env.PORT || 8080;
+
+// --- 5. Start Server ---
+// Use process.env.PORT for Railway
+const PORT = process.env.PORT || 8080; 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
