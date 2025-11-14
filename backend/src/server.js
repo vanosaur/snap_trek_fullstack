@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./routes/authRoutes.js"; // This now has the OPTIONS handler
 
 const app = express();
 const prisma = new PrismaClient();
@@ -14,21 +14,28 @@ const corsOptions = {
   credentials: true
 };
 
-// --- 2. Apply Middleware (CRITICAL ORDER) ---
+// --- 2. Apply Middleware ---
 
-// 1. Handle PREFLIGHT requests (This is the line we fixed)
-// This explicitly handles the 'OPTIONS' request *before* it hits any
-// other routes. Use '/*' to match all paths.
-app.options('/*', cors(corsOptions)); 
-
-// 2. Apply CORS to all other requests
-// This adds the CORS headers to your actual 'POST', 'GET', etc., responses.
+// This applies CORS headers to all *non-preflight* requests globally
 app.use(cors(corsOptions));
 
-// 3. Body Parser
-// Must come *after* CORS but *before* your routes.
+// This is the line that was crashing. Make sure it is DELETED.
+// app.options('/*', cors(corsOptions)); // <-- DELETE THIS
+
+// Body Parser
 app.use(express.json());
 
+// --- 3. Database Connect ---
+// ... (your connectDB function)
+connectDB();
+
+// --- 4. Register Routes (LAST) ---
+// This will now pass OPTIONS requests to your authRoutes file,
+// which now knows how to handle them.
+app.use("/api/auth", authRoutes);
+
+// --- 5. Start Server ---
+// ... (your server listen logic)
 
 // --- 3. Database Connect ---
 async function connectDB() {
