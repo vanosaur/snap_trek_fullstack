@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -33,6 +34,7 @@ connectDB();
 // --- 4. Register Routes ---
 // Express will now forward all /api/auth requests to your authRoutes file.
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
 
 // --- 5. Start Server ---
 const PORT = process.env.PORT || 8080;
