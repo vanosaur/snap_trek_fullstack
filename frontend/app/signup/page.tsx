@@ -28,6 +28,7 @@ export default function SignupPage() {
     }
   };
 
+
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <form
@@ -73,6 +74,7 @@ export default function SignupPage() {
         >
           {loading ? "Signing up..." : "Signup"}
         </button>
+        
 
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
@@ -81,6 +83,8 @@ export default function SignupPage() {
           </a>
         </p>
       </form>
+      
     </div>
   );
 }
+
