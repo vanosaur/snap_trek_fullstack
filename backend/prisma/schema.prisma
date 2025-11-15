@@ -14,12 +14,35 @@ generator client {
 }
 
 
+// This model is for your user accounts (you already have this)
 model User {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String?
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  
+  // Add this line to create the relationship
+  posts     Post[] 
+}
+
+// THIS IS THE NEW MODEL TO ADD
+model Post {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  
+  imageUrl    String    // The URL from Cloudinary
+  caption     String?   // A short text caption
+  location    String?   // e.g., "Paris, France"
+  
+  // This is your "killer feature" - the itinerary data
+  // We use `Json` so you can store a flexible list of
+  // { stay: "...", travel: "...", price: "..." }
+  itinerary   Json?
+  
+  // This creates the relation back to the User
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int      // This is the foreign key
 }
 
 
