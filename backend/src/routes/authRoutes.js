@@ -6,10 +6,15 @@ import { protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // --- 1. Define Router-Specific CORS Options ---
-// This ensures this router *specifically* knows how to handle
-// requests from your Vercel frontend.
+
+// Define the list of allowed origins
+const allowedOrigins = [
+  "https://snap-trek-fullstack.vercel.app", // Your live Vercel URL
+  "http://localhost:3000"           // Your local Next.js URL
+];
+
 const corsOptions = {
-  origin: "https://snap-trek-fullstack.vercel.app",
+  origin: allowedOrigins, // <-- Use the array here
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
