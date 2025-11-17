@@ -1,56 +1,34 @@
-"use client"; // Use a client component to fetch data
+"use client";
 
-import { useEffect, useState } from 'react';
-import api from '../utils/api'; // Import the api instance
-import PostCard from '../src/components/PostCard'; // Import your new component
+import DesktopSidebar from "../components/DesktopSidebar";
+import HomeFeedDesktop from "../components/HomeFeedDesktop";
+import HomeFeedMobile from "../components/HomeFeedDesktop";
+import BottomNav from "../components/BottomNav";
 
-// Define the Post type again (or share it from a types file)
-interface Post {
-  id: number;
-  imageUrl: string;
-  caption: string | null;
-  location: string | null;
-  author: {
-    name: string | null;
-  };
-}
-
-export default function HomePage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        // Use the api instance to make the GET request
-        const response = await api.get('/posts'); 
-        setPosts(response.data);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, []); // Empty array means this runs once on page load
-
-  if (loading) {
-    return <div>Loading posts...</div>;
-  }
-
+export default function Home() {
   return (
-    <div>
-      <h1 style={{ textAlign: 'center' }}>SnapTrek Feed</h1>
-      {posts.length > 0 ? (
-        <div>
-          {posts.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
+    <div className="bg-black min-h-screen text-white">
+      
+      {/* MOBILE LAYOUT */}
+      <div className="md:hidden w-full">
+        <HomeFeedMobile />
+        <BottomNav />
+      </div>
+
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden md:flex">
+        <div className="w-[300px]">
+          <DesktopSidebar active="home" />
         </div>
-      ) : (
-        <p style={{ textAlign: 'center' }}>No posts yet. Be the first!</p>
-      )}
+
+        <div className="flex-1 flex justify-center">
+          <div className="w-full max-w-[630px] mx-auto">
+            <HomeFeedDesktop />
+          </div>
+        </div>
+
+        <div className="hidden xl:flex w-[200px]" />
+      </div>
     </div>
   );
 }
