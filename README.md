@@ -1,7 +1,7 @@
 # 📸 Snap-Trek - A Photo Travel Journal Web App
 
-vercel - https://vercel.com/vanosaurs-projects/snap-trek-fullstack
-render - https://dashboard.render.com/web/srv-d4bmjn6uk2gs73dc9oig
+vercel - snap-trek-fullstack.vercel.app
+render - https://snap-trek-fullstack.onrender.com
 
 > **Capture, Organize, and Map Your Adventures.**
 
