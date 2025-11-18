@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function BottomNav() {
   const tabs = [
-    { label: "Home", icon: "🏠", href: "/" },
+    { label: "Home", icon: "🏠", href: "/feed" },
     { label: "Reels", icon: "🎞", href: "/reels" },
     { label: "Create", icon: "➕", href: "/create" },
     { label: "Profile", icon: "👤", href: "/profile" },

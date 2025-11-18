@@ -8,9 +8,12 @@ const app = express();
 const prisma = new PrismaClient();
 
 // --- 1. Define Global CORS Options ---
-// This will be the default for any routes *not* handled by a specific router.
 const corsOptions = {
-  origin: "https://snap-trek-fullstack.vercel.app",
+  // ✅ CHANGE THIS LINE: Use an array to allow both Local and Vercel
+  origin: [
+    "https://snap-trek-fullstack.vercel.app", // Your Production URL
+    "http://localhost:3000"                   // Your Local Development URL
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -32,7 +35,6 @@ async function connectDB() {
 connectDB();
 
 // --- 4. Register Routes ---
-// Express will now forward all /api/auth requests to your authRoutes file.
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 

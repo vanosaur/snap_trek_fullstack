@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function DesktopSidebar({ active = "home" }) {
   const menu = [
-    { key: "home", label: "Home", href: "/" },
+    { key: "home", label: "Home", href: "/feed" },
     { key: "reels", label: "Reels", href: "/reels" },
     { key: "chat", label: "Chat", href: "/chat" },
     { key: "profile", label: "Profile", href: "/profile" },
