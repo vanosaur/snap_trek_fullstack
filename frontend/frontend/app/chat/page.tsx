@@ -23,8 +23,7 @@ export default function ChatPage() {
             {/* DESKTOP LAYOUT */}
             <div className="hidden md:flex relative z-10 h-screen">
                 <div className="w-[280px] xl:w-[320px] flex-shrink-0">
-                    <DesktopSidebar active="chat" onCreateClick={() => {}} />
-
+                    <DesktopSidebar active="chat" />
                 </div>
 
                 <div className="flex-1 flex items-center justify-center p-6">
