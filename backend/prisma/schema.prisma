@@ -22,7 +22,7 @@ model User {
   password  String
   createdAt DateTime @default(now())
   
-  // Add this line to create the relationship
+  // Add this line to create the relationship 
   posts     Post[] 
 }
 

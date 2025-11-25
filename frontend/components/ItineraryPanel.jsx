@@ -22,14 +22,14 @@ export default function ItineraryPanel({ open, onClose, data }) {
       {/* ---- BACKDROP (Darkens the background) ---- */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] transition-opacity duration-300 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
 
       {/* ---- MAIN PANEL (The Slide-up Sheet) ---- */}
       <div
-        className={`fixed bottom-0 right-0 md:right-0 w-full md:w-[600px] h-[96vh] md:h-screen bg-black text-white z-[9999] overflow-hidden flex flex-col shadow-2xl md:border-l border-zinc-800 transition-transform duration-300 cubic-bezier(0.16, 1, 0.3, 1) ${
+        className={`fixed bottom-0 right-0 md:right-0 w-full md:w-[600px] h-[96vh] md:h-screen bg-black/90 backdrop-blur-2xl text-white z-[9999] overflow-hidden flex flex-col shadow-2xl md:border-l border-white/10 transition-transform duration-300 cubic-bezier(0.16, 1, 0.3, 1) ${
           open ? "translate-y-0 md:translate-x-0" : "translate-y-full md:translate-x-full"
         }`}
       >
@@ -51,7 +51,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
             <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
               <button
                 onClick={onClose}
-                className="w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 transition-all hover:scale-110"
+                className="w-10 h-10 glass-panel rounded-full flex items-center justify-center border border-white/10 transition-all hover:scale-110"
               >
                 <ChevronLeft className="text-white" size={24} />
               </button>
@@ -68,7 +68,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
                 {data.place}
               </h1>
               <div className="flex items-center gap-2 text-gray-300 font-medium">
-                <MapPin size={16} className="text-pink-500" />
+                <MapPin size={16} className="text-teal-400" />
                 {data.location || "Unknown Location"}
               </div>
             </div>
@@ -84,13 +84,13 @@ export default function ItineraryPanel({ open, onClose, data }) {
               <StatBox icon={<Star size={18} />} label="Rating" value={data.rating || "5.0"} />
             </div>
 
-            {/* PRICE BANNER (Pink Gradient) */}
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 p-6 shadow-lg shadow-pink-900/20 flex justify-between items-center">
+            {/* PRICE BANNER (Gradient) */}
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-teal-500 to-blue-600 p-6 shadow-lg shadow-teal-900/20 flex justify-between items-center">
               <div>
-                <p className="text-pink-100 text-xs font-bold uppercase tracking-wider mb-1">Starting from</p>
+                <p className="text-teal-100 text-xs font-bold uppercase tracking-wider mb-1">Starting from</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-white">${data.price}</span>
-                  <span className="text-sm text-pink-100 opacity-80">/USD</span>
+                  <span className="text-sm text-teal-100 opacity-80">/USD</span>
                 </div>
               </div>
               <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm animate-pulse">
@@ -101,12 +101,12 @@ export default function ItineraryPanel({ open, onClose, data }) {
             {/* HIGHLIGHTS */}
             <div>
               <h3 className="text-xl font-bold mb-4">Trip Highlights</h3>
-              <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5 space-y-3">
+              <div className="glass-panel border border-white/5 rounded-2xl p-5 space-y-3">
                 {data.highlights && data.highlights.map((highlight, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="min-w-[20px] mt-0.5">
-                      <div className="w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center">
-                        <CheckCircle2 size={12} className="text-pink-500" />
+                      <div className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center">
+                        <CheckCircle2 size={12} className="text-teal-400" />
                       </div>
                     </div>
                     <p className="text-gray-300 text-sm leading-relaxed">{highlight}</p>
@@ -118,13 +118,16 @@ export default function ItineraryPanel({ open, onClose, data }) {
             {/* DAY BY DAY ITINERARY (The Timeline) */}
             <div>
                <h3 className="text-xl font-bold mb-4">Day by Day Itinerary</h3>
-               <div className="space-y-4">
+               <div className="space-y-4 relative">
+                  {/* Connecting Line (Optional visual) */}
+                  <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-white/10 z-0" />
+
                   {data.itinerary && data.itinerary.map((day, i) => (
-                    <div key={i} className="bg-zinc-900 border border-white/5 p-5 rounded-2xl flex gap-4 relative overflow-hidden group hover:border-white/10 transition-colors">
+                    <div key={i} className="glass-panel border border-white/5 p-5 rounded-2xl flex gap-4 relative overflow-hidden group hover:border-white/10 transition-colors z-10">
                        
-                       {/* Blue Number Circle */}
+                       {/* Number Circle */}
                        <div className="flex-shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-black font-bold shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg shadow-teal-500/20">
                              {i + 1}
                           </div>
                        </div>
@@ -137,7 +140,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
                           <ul className="space-y-1.5">
                              {day.activities?.map((act, j) => (
                                 <li key={j} className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                                   <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                                   <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
                                    {act}
                                 </li>
                              ))}
@@ -152,7 +155,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
             {data.stay && (
               <div>
                  <h3 className="text-xl font-bold mb-4">Stay Options</h3>
-                 <div className="group bg-zinc-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all">
+                 <div className="group glass-panel border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all">
                     <div className="h-48 w-full overflow-hidden relative">
                        <img src={data.stay.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Hotel" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
@@ -184,7 +187,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
            <button className="flex-1 py-4 rounded-xl border border-white/20 font-bold text-white hover:bg-white/10 transition-colors text-sm uppercase tracking-wide">
               Save for Later
            </button>
-           <button className="flex-[2] py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all text-sm uppercase tracking-wide transform active:scale-[0.98]">
+           <button className="flex-[2] py-4 rounded-xl bg-gradient-to-r from-teal-500 to-blue-600 font-bold text-white shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all text-sm uppercase tracking-wide transform active:scale-[0.98]">
               Book This Trip
            </button>
         </div>
@@ -197,7 +200,7 @@ export default function ItineraryPanel({ open, onClose, data }) {
 /* ---- SUB COMPONENTS ---- */
 function ActionButton({ icon }) {
   return (
-    <button className="w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 transition-all hover:scale-110 text-white">
+    <button className="w-10 h-10 glass-panel hover:bg-white/20 rounded-full flex items-center justify-center border border-white/10 transition-all hover:scale-110 text-white">
       {icon}
     </button>
   );
@@ -205,8 +208,8 @@ function ActionButton({ icon }) {
 
 function StatBox({ icon, label, value }) {
   return (
-    <div className="bg-zinc-900 border border-white/5 p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-zinc-800/80 transition-colors">
-      <div className="text-pink-500">{icon}</div>
+    <div className="glass-panel border border-white/5 p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors">
+      <div className="text-teal-400">{icon}</div>
       <div className="text-center">
          <p className="text-[10px] uppercase text-gray-500 font-bold tracking-wider mb-0.5">{label}</p>
          <p className="text-sm font-bold text-white">{value}</p>
