@@ -1,361 +1,282 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-// Ensure this path matches your project structure
-import reelsData from "../data/reelsData"; 
+import React, { useState, useEffect, useRef } from "react";
 import {
+  Compass,
+  MapPin,
   Heart,
   MessageCircle,
-  Bookmark,
   Share2,
-  Play,
-  MapPin,
-  ChevronUp,
-  ChevronDown,
-  Compass,
   Volume2,
   VolumeX,
-  X, 
-  Map, 
-  Clock, 
-  DollarSign, 
-  ChevronRight,
-  Music
+  Play,
+  ChevronUp,
+  ChevronDown,
+  Music,
 } from "lucide-react";
+// adjust this import path if your component location differs:
+import BottomNav from "./BottomNav";
+import reelsData from "../data/reelsData";
+
 
 /* =========================================
-   COMPONENT 1: THE BACK (ITINERARY CARD)
+   CONSTANTS FOR CTA / NAV SIZING
    ========================================= */
-/* =========================================
-   COMPONENT 1: THE BACK (ITINERARY CARD)
-   ========================================= */
-const ItineraryCard = ({ reel, onClose }) => {
-  
-  const stopScroll = (e) => e.stopPropagation();
-
-  return (
-    <div 
-      className="w-full h-full bg-white text-black p-6 flex flex-col relative overflow-y-auto overscroll-y-contain touch-pan-y"
-      onWheel={stopScroll}
-      onTouchMove={stopScroll}
-      onClick={stopScroll} 
-    >
-      
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6 flex-shrink-0 relative z-10">
-        <div>
-          <h3 className="font-bold text-xl leading-tight">Trip to {reel.place}</h3>
-          <p className="text-zinc-500 text-xs mt-1">3 Days • $450 Budget</p>
-        </div>
-        
-        <button 
-          onClick={(e) => { 
-            e.preventDefault();
-            e.stopPropagation(); 
-            onClose(); 
-          }} 
-          className="relative z-50 p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer active:scale-90"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Map Placeholder */}
-      <div className="w-full h-48 bg-teal-50 rounded-xl mb-6 border-2 border-dashed border-teal-200 flex items-center justify-center flex-shrink-0 relative overflow-hidden group">
-          <Map className="text-teal-300 mb-2 group-hover:scale-110 transition-transform" size={40} />
-          <span className="text-teal-600 font-bold text-sm z-10">Interactive Map View</span>
-          
-          <div className="absolute top-8 left-12 w-3 h-3 bg-red-500 rounded-full animate-bounce shadow-lg" />
-          <div className="absolute bottom-10 right-16 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg" />
-      </div>
-
-      {/* Timeline Itinerary */}
-      <div className="space-y-6 flex-1 pb-4">
-        {[1, 2, 3, 4, 5].map((day) => (
-          <div key={day} className="relative pl-6 border-l-2 border-zinc-100">
-            <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-teal-500 border-2 border-white shadow-sm" />
-            <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-              Day {day} <span className="text-zinc-400 font-normal text-xs">Oct {12+day}</span>
-            </h4>
-            
-            <div className="space-y-3">
-               <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-100 flex gap-3 hover:bg-zinc-100 transition-colors cursor-pointer">
-                  <div className="w-12 h-12 bg-zinc-200 rounded-md overflow-hidden flex-shrink-0">
-                      <img src={`https://images.unsplash.com/photo-${1550000000000 + day * 100}?w=100&h=100&fit=crop`} className="w-full h-full object-cover" alt="thumb" />
-                  </div>
-                  <div>
-                      <p className="font-bold text-xs">Activity #{day}</p>
-                      <p className="text-[10px] text-zinc-500 flex items-center gap-1 mt-1"><Clock size={10} /> 9:00 AM</p>
-                  </div>
-               </div>
-               <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-100 flex gap-3 hover:bg-zinc-100 transition-colors cursor-pointer">
-                  <div className="w-12 h-12 bg-zinc-200 rounded-md overflow-hidden flex-shrink-0">
-                      <img src={`https://images.unsplash.com/photo-${1550000000000 + day * 200}?w=100&h=100&fit=crop`} className="w-full h-full object-cover" alt="thumb" />
-                  </div>
-                  <div>
-                      <p className="font-bold text-xs">Evening Spot</p>
-                      <p className="text-[10px] text-zinc-500 flex items-center gap-1 mt-1"><DollarSign size={10} /> Free Entry</p>
-                  </div>
-               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom CTA - FIX APPLIED HERE */}
-      {/* Added 'pb-24' (padding bottom) so the button sits higher up on mobile */}
-      <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0 bg-white sticky bottom-0 pb-24 md:pb-0 z-20">
-          <button className="w-full bg-black text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-xl">
-              Book This Trip <ChevronRight size={16} />
-          </button>
-      </div>
-    </div>
-  );
-};
+import ItineraryCard from "./ItineraryCard";
 
 /* =========================================
-   COMPONENT 2: THE 3D FLIP ITEM (Full Logic)
+   CONSTANTS FOR CTA / NAV SIZING
    ========================================= */
-const ReelItem = ({ reel, isActive, isMuted, toggleMute, setParentScrollLock }) => {
+const CTA_HEIGHT = 72; // px - height of the "Book This Trip" button area
+const BOTTOM_NAV_HEIGHT = 64; // px - estimated BottomNav height on mobile
+
+/* =========================================
+   3. REEL ITEM & PLAYER
+   ========================================= */
+
+const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const videoRef = useRef(null);
 
-  // LOGIC: Open Itinerary -> Lock Main Feed
+  // Handle Flip Triggers
   const handleOpenItinerary = (e) => {
     e.stopPropagation();
     setIsFlipped(true);
-    setParentScrollLock(true); 
   };
 
-  // LOGIC: Close Itinerary -> Unlock Main Feed
   const handleCloseItinerary = () => {
     setIsFlipped(false);
-    setParentScrollLock(false); 
   };
 
-  // Safety: If user scrolls away fast, ensure lock is released
   useEffect(() => {
     if (!isActive && isFlipped) {
-      handleCloseItinerary();
+      setIsFlipped(false);
     }
-  }, [isActive]);
+
+    if (videoRef.current) {
+      if (isActive && !isPaused && !isFlipped) {
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => console.log("Autoplay prevented:", error));
+        }
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isActive, isPaused, isFlipped]);
 
   return (
-    <div className="relative w-full h-full md:w-[450px] md:h-[calc(100vh-40px)] perspective-1000 group">
-      <div className={`relative w-full h-full transition-all duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-        
-        {/* === FRONT FACE (VIDEO) === */}
-        <div 
-            className={`absolute inset-0 backface-hidden w-full h-full bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border-x border-white/5 md:border-none 
-            ${isFlipped ? 'pointer-events-none z-0' : 'z-10'}`}
+    // RESPONSIVE CONTAINER:
+    // Mobile: w-full h-full (fills screen)
+    // Desktop (md): Fixed width 400px, max-height 90vh (prevents overflow on small laptops)
+    <div className="relative w-full h-full md:w-[400px] md:h-[700px] md:max-h-[90vh] group perspective-1000 transition-all duration-300">
+      <div
+        className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        {/* FRONT FACE */}
+        <div
+          className="absolute inset-0 backface-hidden w-full h-full bg-black rounded-none md:rounded-2xl overflow-hidden"
+          style={{ backfaceVisibility: "hidden" }}
         >
-           {/* Video Player */}
-           <video
-                src={reel.video}
-                className="w-full h-full object-cover pointer-events-none"
-                autoPlay={isActive}
-                muted={isMuted}
-                loop
-                playsInline
-                ref={(ref) => {
-                    if (ref) {
-                        if (isPaused || !isActive) ref.pause();
-                        else ref.play().catch(() => {});
-                    }
-                }}
-           />
+          <video
+            ref={videoRef}
+            src={reel.video}
+            className="w-full h-full object-cover"
+            loop
+            muted={isMuted}
+            playsInline
+            onClick={() => setIsPaused(!isPaused)}
+          />
 
-           {/* Gradients & Overlays */}
-           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
-           <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80 pointer-events-none" />
 
-           {/* Play/Pause Area */}
-           <div className="absolute inset-0 z-10 cursor-pointer pointer-events-auto" onClick={() => setIsPaused(!isPaused)} />
-           
-           {isPaused && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-black/30 backdrop-blur-[2px]">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-2xl">
-                    <Play className="fill-white text-white ml-1" size={32} />
-                  </div>
-                </div>
-           )}
+          {/* Mute Button - Positioned safely */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute();
+            }}
+            className="absolute top-12 md:top-6 right-4 md:right-6 z-40 p-2 rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 transition"
+          >
+            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
 
-           {/* Mute Button */}
-           <button 
-             onClick={(e) => { e.stopPropagation(); toggleMute(); }}
-             className="absolute top-6 right-6 z-40 p-2 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-all pointer-events-auto"
-           >
-             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-           </button>
+          {isPaused && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                <Play className="text-white fill-white ml-1" size={32} />
+              </div>
+            </div>
+          )}
 
-           {/* === FLIP BUTTON (THE TRIGGER) === */}
-           <button 
+          {/* Side Controls */}
+          <div className="absolute right-2 md:right-4 bottom-24 md:bottom-24 flex flex-col gap-5 md:gap-6 items-center z-30">
+            <div className="flex flex-col items-center gap-1">
+              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><Heart size={24} className="text-white" /></div>
+              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">{reel.likes || "0"}</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><MessageCircle size={24} className="text-white" /></div>
+              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">{reel.comments || "0"}</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><Share2 size={24} className="text-white" /></div>
+              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">Share</span>
+            </div>
+
+            {/* Compass Button */}
+            <div className="flex flex-col items-center gap-1 mt-2">
+              <button
                 onClick={handleOpenItinerary}
-                className="absolute bottom-24 right-4 z-50 glass-panel p-3 rounded-full border border-teal-500/30 bg-black/20 backdrop-blur-md hover:bg-teal-500 hover:text-white transition-all group/btn shadow-lg pointer-events-auto"
-            >
-                <Compass size={24} className="text-white group-hover/btn:animate-spin-slow group-hover/btn:text-white" />
-                <span className="absolute right-14 top-1/2 -translate-y-1/2 bg-black/80 text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none border border-white/10">
-                    Flip to Itinerary
-                </span>
-           </button>
+                className="p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-all cursor-pointer border border-white/20"
+              >
+                <Compass size={24} className="text-white" />
+              </button>
+              <span className="text-[10px] md:text-xs font-bold text-white shadow-black drop-shadow-md">Itinerary</span>
+            </div>
+          </div>
 
-           {/* Right Actions */}
-           <div className="absolute right-4 bottom-40 flex flex-col gap-6 z-30 pb-4 items-center pointer-events-auto">
-             <ActionButton icon={<Heart size={28} />} count="12k" />
-             <ActionButton icon={<MessageCircle size={28} />} count="340" />
-             <ActionButton icon={<Bookmark size={28} />} />
-             <ActionButton icon={<Share2 size={28} />} />
-             <div className="mt-2 w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center animate-spin-slow overflow-hidden">
-                <img src={reel.avatar || "https://github.com/shadcn.png"} className="w-full h-full object-cover opacity-80" alt="music" />
-             </div>
-           </div>
-           
-           {/* Caption Area */}
-           <div className="absolute bottom-0 left-0 w-full px-6 pb-20 md:pb-8 z-20 text-white pointer-events-none pr-20">
-             <div className="flex items-center gap-3 mb-3 pointer-events-auto">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-teal-400 to-blue-500 p-[1.5px] cursor-pointer">
-                     <img src={reel.avatar || "https://github.com/shadcn.png"} alt="User" className="w-full h-full rounded-full object-cover border-2 border-black" />
+          {/* Bottom Info */}
+          <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 pb-6 md:pb-8 text-white z-20">
+            <div className="flex items-center gap-3 mb-3 pr-12">
+              <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-gray-800 shrink-0">
+                <img src={reel.avatar || "https://github.com/shadcn.png"} alt="user" className="w-full h-full object-cover" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm text-white drop-shadow-md truncate">@{reel.username || "user"}</h3>
+                <div className="flex items-center gap-1 text-xs opacity-80 truncate">
+                  <MapPin size={10} /> <span className="truncate">{reel.place}</span>
                 </div>
-                <div className="flex flex-col leading-tight">
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm hover:underline cursor-pointer shadow-black drop-shadow-md">{reel.username}</span>
-                        <button className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded hover:bg-white/40 transition-colors">Follow</button>
-                    </div>
-                    <span className="text-xs text-zinc-300 flex items-center gap-1 mt-0.5"><MapPin size={10} className="text-teal-400" /> {reel.place}</span>
-                </div>
-             </div>
-             
-             <h2 className="text-sm leading-snug mb-2 font-normal text-zinc-100 drop-shadow-md line-clamp-2">
-                  {reel.title} <span className="text-zinc-400">...more</span>
-             </h2>
-
-             {/* Music Tag */}
-             <div className="flex items-center gap-2 text-xs font-medium text-white/90 mb-3">
-                 <Music size={12} />
-                 <div className="w-32 overflow-hidden whitespace-nowrap">
-                      <p className="animate-marquee">Original Audio • {reel.username}</p>
-                 </div>
-             </div>
-           </div>
+              </div>
+              <button className="bg-white/20 px-3 py-1 rounded-md text-xs font-bold backdrop-blur-sm ml-auto hover:bg-white/30 transition shrink-0">Follow</button>
+            </div>
+            <p className="text-sm opacity-90 line-clamp-2 mb-2 pr-12">{reel.title}</p>
+            <div className="flex items-center gap-2 text-xs opacity-75">
+              <Music size={12} /> <span className="w-40 truncate">Original Audio • {reel.username}</span>
+            </div>
+          </div>
         </div>
 
-        {/* === BACK FACE (ITINERARY) === */}
-        <div 
-            className={`absolute inset-0 backface-hidden w-full h-full rounded-2xl overflow-hidden rotate-y-180 shadow-2xl 
-            ${isFlipped ? 'z-20' : 'z-0'}`}
+        {/* BACK FACE */}
+        <div
+          className="absolute inset-0 w-full h-full rounded-none md:rounded-2xl overflow-hidden bg-white z-50"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+          }}
         >
-            {isFlipped && (
-                <ItineraryCard reel={reel} onClose={handleCloseItinerary} />
-            )}
+          <ItineraryCard reel={reel} onClose={handleCloseItinerary} isMobile={isMobile} />
         </div>
-
       </div>
     </div>
   );
 };
 
 /* =========================================
-   COMPONENT 3: MAIN PLAYER (FEED LOGIC)
+   MAIN EXPORT
    ========================================= */
 export default function ReelPlayer() {
-  const containerRef = useRef(null);
-  const reelRefs = useRef([]);
+  const [activeReelId, setActiveReelId] = useState(reelsData[0]?.id || 1);
   const [isMuted, setIsMuted] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-  
-  // STATE: Locks the main feed when Itinerary is open
-  const [isScrollLocked, setIsScrollLocked] = useState(false);
+  const containerRef = useRef(null);
+  const observerRef = useRef(null);
 
-  // Keyboard navigation
+  // detect mobile to control BottomNav / CTA offsets
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isScrollLocked) return; 
-      if (e.key === "ArrowDown") scrollToReel(activeIndex + 1);
-      if (e.key === "ArrowUp") scrollToReel(activeIndex - 1);
-      if (e.key === "m") setIsMuted((prev) => !prev);
+    const mq = window.matchMedia && window.matchMedia("(max-width: 767px)");
+    const handler = (e) => setIsMobile(e.matches);
+    setIsMobile(mq ? mq.matches : false);
+    if (mq && mq.addEventListener) mq.addEventListener("change", handler);
+    else if (mq && mq.addListener) mq.addListener(handler);
+    return () => {
+      if (mq && mq.removeEventListener) mq.removeEventListener("change", handler);
+      else if (mq && mq.removeListener) mq.removeListener(handler);
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeIndex, isScrollLocked]);
-
-  const scrollToReel = (index) => {
-    if (index < 0 || index >= reelsData.length) return;
-    reelRefs.current[index]?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Intersection Observer
-  useEffect(() => {
-    reelRefs.current = reelRefs.current.slice(0, reelsData.length);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number(entry.target.dataset.index);
-            setActiveIndex(idx);
-          }
-        });
-      },
-      { root: containerRef.current, threshold: 0.6 }
-    );
-    reelRefs.current.forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const options = {
+      root: containerRef.current,
+      threshold: 0.6,
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveReelId(Number(entry.target.dataset.id));
+        }
+      });
+    }, options);
+
+    const sections = document.querySelectorAll(".reel-section");
+    sections.forEach((section) => observerRef.current.observe(section));
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, []);
+
+  const scrollToReel = (direction) => {
+    if (!containerRef.current) return;
+    const currentIndex = reelsData.findIndex((r) => r.id === activeReelId);
+    let nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    if (nextIndex >= 0 && nextIndex < reelsData.length) {
+      const nextReel = document.querySelector(`[data-id="${reelsData[nextIndex].id}"]`);
+      nextReel?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="relative w-full h-[100dvh] bg-black flex overflow-hidden">
-      
-      {/* Scroll Container */}
+    <div className="bg-black w-full h-[100dvh] flex items-center justify-center relative">
       <div
         ref={containerRef}
-        // KEY LOGIC: "overflow-hidden" kills the snap scroll, locking the user in place
-        className={`w-full h-[100dvh] bg-transparent scroll-smooth z-10 no-scrollbar 
-          ${isScrollLocked ? "overflow-hidden" : "overflow-y-scroll snap-y snap-mandatory"}`}
+        className="w-full md:w-[450px] h-[100dvh] md:h-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide no-scrollbar"
       >
-        {reelsData.map((reel, idx) => (
+        {reelsData.map((reel) => (
           <div
             key={reel.id}
-            data-index={idx}
-            ref={(el) => (reelRefs.current[idx] = el)}
-            className="snap-start w-full h-[100dvh] flex justify-center items-center relative md:gap-8"
+            data-id={reel.id}
+            className="reel-section w-full h-[100dvh] md:h-full snap-start flex items-center justify-center md:py-8"
           >
-            {/* The 3D Item Component */}
-            <ReelItem 
-                reel={reel} 
-                isActive={idx === activeIndex} 
-                isMuted={isMuted}
-                toggleMute={() => setIsMuted(!isMuted)}
-                setParentScrollLock={setIsScrollLocked}
+            <ReelItem
+              reel={reel}
+              isActive={activeReelId === reel.id}
+              isMuted={isMuted}
+              toggleMute={() => setIsMuted(!isMuted)}
+              isMobile={isMobile}
             />
-
-            {/* Desktop Navigation Arrows (Hide when locked) */}
-            {!isScrollLocked && (
-              <div className="hidden md:flex flex-col gap-4 z-50 ml-4">
-                  <button onClick={() => scrollToReel(idx - 1)} className="p-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white/50 hover:text-white border border-white/5 transition-all hover:scale-110">
-                      <ChevronUp size={24} />
-                  </button>
-                  <button onClick={() => scrollToReel(idx + 1)} className="p-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white/50 hover:text-white border border-white/5 transition-all hover:scale-110">
-                      <ChevronDown size={24} />
-                  </button>
-              </div>
-            )}
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-/* --- Helper UI --- */
-function ActionButton({ icon, count }) {
-  return (
-    <div className="flex flex-col items-center gap-1 cursor-pointer group">
-      <div className="p-3 rounded-full glass-panel border border-white/5 group-hover:bg-white/20 transition-all active:scale-90 shadow-lg">
-        <div className="text-white group-hover:text-teal-400 transition-colors drop-shadow-md">{icon}</div>
+      {/* Desktop up/down nav */}
+      <div className="hidden md:flex fixed right-10 flex-col gap-4 text-white/50 z-50">
+        <button onClick={() => scrollToReel("up")} className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"><ChevronUp /></button>
+        <button onClick={() => scrollToReel("down")} className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"><ChevronDown /></button>
       </div>
-      {count && (
-        <span className="text-white text-xs font-bold drop-shadow-md opacity-90">
-          {count}
-        </span>
+
+      {/* Mobile BottomNav + safe stacking */}
+      {isMobile && (
+        <>
+          {/* The CTA is inside ItineraryCard and positioned above BottomNav via CSS inline bottom offset.
+              This BottomNav is the app's bottom nav and sits at the very bottom. */}
+          <div
+            className="fixed left-0 right-0 bottom-0 z-50 md:hidden"
+            style={{
+              height: `${BOTTOM_NAV_HEIGHT}px`,
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              background: "transparent",
+            }}
+          >
+            <div className="w-full h-full">
+              <BottomNav />
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

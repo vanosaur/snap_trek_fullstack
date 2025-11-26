@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 
-// COMPONENTS
 import ReelPlayer from "../../components/ReelPlayer";
-import ItineraryPanel from "../../components/ItineraryPanel";
+import ItineraryCard from "../../components/ItineraryCard";
 import DesktopSidebar from "../../components/DesktopSidebar";
 import BottomNav from "../../components/BottomNav";
 
@@ -12,61 +11,42 @@ export default function ReelsPage() {
   const [activeItinerary, setActiveItinerary] = useState(null);
 
   return (
-    <div className="bg-[#050505] min-h-screen text-white relative overflow-hidden font-sans selection:bg-teal-500/30">
-      
-      {/* BACKGROUND AMBIANCE */}
-      <div className="fixed top-[-20%] left-[-20%] w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="bg-[#050505] min-h-screen text-white">
 
-      {/* ===== MOBILE VERSION ===== */}
-      <div className="md:hidden w-full relative z-10">
-        <ReelPlayer
-          onOpenItinerary={(reel) => {
-            console.log("📌 Open itinerary for:", reel.place);
-            setActiveItinerary(reel);
-          }}
-        />
-
-        {/* MOBILE BOTTOM NAV */}
+      {/* MOBILE */}
+      <div className="md:hidden">
+        <ReelPlayer onOpenItinerary={(reel) => setActiveItinerary(reel)} />
         <BottomNav active="reels" />
-
-        {/* ITINERARY PANEL */}
-        <ItineraryPanel
-          open={!!activeItinerary}
-          onClose={() => setActiveItinerary(null)}
-          data={activeItinerary}
-        />
+        {activeItinerary && (
+          <ItineraryCard
+            reel={activeItinerary}
+            onClose={() => setActiveItinerary(null)}
+          />
+        )}
       </div>
 
-      {/* ===== DESKTOP VERSION ===== */}
-      <div className="hidden md:flex w-full h-screen relative z-10">
-
-        {/* LEFT SIDEBAR */}
-        <div className="w-[280px] xl:w-[320px] flex-shrink-0">
+      {/* DESKTOP */}
+      <div className="hidden md:flex w-full h-screen">
+        
+        {/* Sidebar */}
+        <div className="w-[280px]">
           <DesktopSidebar active="reels" />
         </div>
 
-        {/* CENTER FEED */}
+        {/* Center Feed */}
         <div className="flex-1 flex justify-center items-center relative">
-          <div className="w-full max-w-[600px] mx-auto relative">
-            <ReelPlayer
-              onOpenItinerary={(reel) => {
-                console.log("PC 📌 Open itinerary for:", reel.place);
-                setActiveItinerary(reel);
-              }}
-            />
-          </div>
-
-          {/* ITINERARY PANEL (Desktop overlay) */}
-          <ItineraryPanel
-            open={!!activeItinerary}
-            onClose={() => setActiveItinerary(null)}
-            data={activeItinerary}
-          />
+          <ReelPlayer onOpenItinerary={(r) => setActiveItinerary(r)} />
+          
+          {activeItinerary && (
+            <div className="absolute right-0 top-0 h-full w-[380px] bg-white">
+              <ItineraryCard
+                reel={activeItinerary}
+                onClose={() => setActiveItinerary(null)}
+              />
+            </div>
+          )}
         </div>
 
-        {/* RIGHT EMPTY COLUMN */}
-        <div className="hidden xl:flex w-[320px] flex-shrink-0" />
       </div>
     </div>
   );
