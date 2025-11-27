@@ -14,51 +14,60 @@ import {
   ChevronDown,
   Music,
 } from "lucide-react";
-// adjust this import path if your component location differs:
+
 import BottomNav from "./BottomNav";
-import reelsData from "../data/reelsData";
-
-
-/* =========================================
-   CONSTANTS FOR CTA / NAV SIZING
-   ========================================= */
 import ItineraryCard from "./ItineraryCard";
 
-/* =========================================
-   CONSTANTS FOR CTA / NAV SIZING
-   ========================================= */
-const CTA_HEIGHT = 72; // px - height of the "Book This Trip" button area
-const BOTTOM_NAV_HEIGHT = 64; // px - estimated BottomNav height on mobile
+const CTA_HEIGHT = 72;
+const BOTTOM_NAV_HEIGHT = 64;
 
 /* =========================================
-   3. REEL ITEM & PLAYER
+   REEL ITEM COMPONENT
    ========================================= */
-
-const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
+const ReelItem = ({
+  reel,
+  isActive,
+  isMuted,
+  toggleMute,
+  isMobile,
+  setIsFlippedGlobal,
+}) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef(null);
 
-  // Handle Flip Triggers
+  /* OPEN flip card */
   const handleOpenItinerary = (e) => {
     e.stopPropagation();
     setIsFlipped(true);
+    setIsFlippedGlobal(true);
   };
 
+  /* CLOSE flip card */
   const handleCloseItinerary = () => {
     setIsFlipped(false);
+    setIsFlippedGlobal(false);
   };
 
+  /* Stop scroll bubbling */
+  const stopScroll = (e) => {
+    if (isFlipped) e.stopPropagation();
+  };
+
+  /* Video autoplay */
   useEffect(() => {
     if (!isActive && isFlipped) {
       setIsFlipped(false);
+      setIsFlippedGlobal(false);
     }
 
     if (videoRef.current) {
       if (isActive && !isPaused && !isFlipped) {
         const playPromise = videoRef.current.play();
         if (playPromise !== undefined) {
-          playPromise.catch((error) => console.log("Autoplay prevented:", error));
+          playPromise.catch((error) =>
+            console.log("Autoplay prevented:", error)
+          );
         }
       } else {
         videoRef.current.pause();
@@ -67,22 +76,25 @@ const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
   }, [isActive, isPaused, isFlipped]);
 
   return (
-    // RESPONSIVE CONTAINER:
-    // Mobile: w-full h-full (fills screen)
-    // Desktop (md): Fixed width 400px, max-height 90vh (prevents overflow on small laptops)
-    <div className="relative w-full h-full md:w-[400px] md:h-[700px] md:max-h-[90vh] group perspective-1000 transition-all duration-300">
+    <div
+      className={`relative w-full h-full md:w-[400px] md:h-[700px] md:max-h-[90vh] group perspective-1000 transition-all duration-300 ${
+        isFlipped ? "overflow-hidden" : ""
+      }`}
+    >
       <div
-        className={`relative w-full h-full transition-all duration-700 preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}
+        className={`relative w-full h-full transition-all duration-700 preserve-3d ${
+          isFlipped ? "rotate-y-180" : ""
+        }`}
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* FRONT FACE */}
+        {/* FRONT */}
         <div
           className="absolute inset-0 backface-hidden w-full h-full bg-black rounded-none md:rounded-2xl overflow-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
           <video
             ref={videoRef}
-            src={reel.video}
+            src={reel.video_url || reel.video}
             className="w-full h-full object-cover"
             loop
             muted={isMuted}
@@ -92,7 +104,7 @@ const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
 
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80 pointer-events-none" />
 
-          {/* Mute Button - Positioned safely */}
+          {/* MUTE BUTTON */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -103,6 +115,7 @@ const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
 
+          {/* PAUSE OVERLAY */}
           {isPaused && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
@@ -111,63 +124,65 @@ const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
             </div>
           )}
 
-          {/* Side Controls */}
-          <div className="absolute right-2 md:right-4 bottom-24 md:bottom-24 flex flex-col gap-5 md:gap-6 items-center z-30">
+          {/* SIDE CONTROLS */}
+          <div className="absolute right-2 md:right-4 bottom-24 md:bottom-24 flex flex-col gap-5 items-center z-30">
             <div className="flex flex-col items-center gap-1">
-              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><Heart size={24} className="text-white" /></div>
-              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">{reel.likes || "0"}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><MessageCircle size={24} className="text-white" /></div>
-              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">{reel.comments || "0"}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="p-2.5 md:p-3 bg-white/10 backdrop-blur-md rounded-full"><Share2 size={24} className="text-white" /></div>
-              <span className="text-xs font-bold text-white shadow-black drop-shadow-md">Share</span>
+              <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
+                <Heart size={24} className="text-white" />
+              </div>
+              <span className="text-xs font-bold text-white">
+                {reel.likes || "0"}
+              </span>
             </div>
 
-            {/* Compass Button */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
+                <MessageCircle size={24} className="text-white" />
+              </div>
+              <span className="text-xs font-bold text-white">
+                {reel.comments || "0"}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-1">
+              <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
+                <Share2 size={24} className="text-white" />
+              </div>
+              <span className="text-xs font-bold text-white">Share</span>
+            </div>
+
             <div className="flex flex-col items-center gap-1 mt-2">
               <button
                 onClick={handleOpenItinerary}
-                className="p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition-all cursor-pointer border border-white/20"
+                className="p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition border border-white/20"
               >
                 <Compass size={24} className="text-white" />
               </button>
-              <span className="text-[10px] md:text-xs font-bold text-white shadow-black drop-shadow-md">Itinerary</span>
+              <span className="text-xs text-white">Itinerary</span>
             </div>
           </div>
 
-          {/* Bottom Info */}
-          <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 pb-6 md:pb-8 text-white z-20">
-            <div className="flex items-center gap-3 mb-3 pr-12">
-              <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-gray-800 shrink-0">
-                <img src={reel.avatar || "https://github.com/shadcn.png"} alt="user" className="w-full h-full object-cover" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-sm text-white drop-shadow-md truncate">@{reel.username || "user"}</h3>
-                <div className="flex items-center gap-1 text-xs opacity-80 truncate">
-                  <MapPin size={10} /> <span className="truncate">{reel.place}</span>
-                </div>
-              </div>
-              <button className="bg-white/20 px-3 py-1 rounded-md text-xs font-bold backdrop-blur-sm ml-auto hover:bg-white/30 transition shrink-0">Follow</button>
-            </div>
-            <p className="text-sm opacity-90 line-clamp-2 mb-2 pr-12">{reel.title}</p>
-            <div className="flex items-center gap-2 text-xs opacity-75">
-              <Music size={12} /> <span className="w-40 truncate">Original Audio • {reel.username}</span>
-            </div>
+          {/* BOTTOM INFO */}
+          <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 text-white z-20">
+            <p className="text-sm opacity-90 line-clamp-2 mb-2">{reel.title}</p>
           </div>
         </div>
 
-        {/* BACK FACE */}
+        {/* BACK — Scrollable Itinerary */}
         <div
-          className="absolute inset-0 w-full h-full rounded-none md:rounded-2xl overflow-hidden bg-white z-50"
+          className="absolute inset-0 w-full h-full rounded-none md:rounded-2xl overflow-y-auto bg-white z-50"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
           }}
+          onWheel={stopScroll}
+          onTouchMove={stopScroll}
         >
-          <ItineraryCard reel={reel} onClose={handleCloseItinerary} isMobile={isMobile} />
+          <ItineraryCard
+            reel={reel}
+            onClose={handleCloseItinerary}
+            isMobile={isMobile}
+          />
         </div>
       </div>
     </div>
@@ -175,72 +190,102 @@ const ReelItem = ({ reel, isActive, isMuted, toggleMute, isMobile }) => {
 };
 
 /* =========================================
-   MAIN EXPORT
+   MAIN REEL PLAYER
    ========================================= */
 export default function ReelPlayer() {
-  const [activeReelId, setActiveReelId] = useState(reelsData[0]?.id || 1);
+  const [reels, setReels] = useState([]);
+  const [activeReelId, setActiveReelId] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [isFlippedGlobal, setIsFlippedGlobal] = useState(false);
+
   const containerRef = useRef(null);
   const observerRef = useRef(null);
-
-  // detect mobile to control BottomNav / CTA offsets
   const [isMobile, setIsMobile] = useState(false);
+
+  /* Detect Mobile */
   useEffect(() => {
-    const mq = window.matchMedia && window.matchMedia("(max-width: 767px)");
+    const mq = window.matchMedia("(max-width: 767px)");
     const handler = (e) => setIsMobile(e.matches);
-    setIsMobile(mq ? mq.matches : false);
-    if (mq && mq.addEventListener) mq.addEventListener("change", handler);
-    else if (mq && mq.addListener) mq.addListener(handler);
-    return () => {
-      if (mq && mq.removeEventListener) mq.removeEventListener("change", handler);
-      else if (mq && mq.removeListener) mq.removeListener(handler);
-    };
+    handler(mq);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
+  /* Fetch REELS */
   useEffect(() => {
-    const options = {
-      root: containerRef.current,
-      threshold: 0.6,
-    };
+    async function fetchReels() {
+      try {
+        const res = await fetch(
+          "https://snap-trek-fullstack.onrender.com/api/reels"
+        );
+        const data = await res.json();
+        setReels(data);
+
+        if (data.length > 0) setActiveReelId(data[0].id);
+      } catch (err) {
+        console.error("Failed to load reels:", err);
+      }
+    }
+
+    fetchReels();
+  }, []);
+
+  /* Intersection */
+  useEffect(() => {
+    if (!reels.length) return;
+
+    const options = { root: containerRef.current, threshold: 0.6 };
 
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting)
           setActiveReelId(Number(entry.target.dataset.id));
-        }
       });
     }, options);
 
     const sections = document.querySelectorAll(".reel-section");
-    sections.forEach((section) => observerRef.current.observe(section));
+    sections.forEach((s) => observerRef.current.observe(s));
 
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
-  }, []);
+    return () => observerRef.current?.disconnect();
+  }, [reels]);
 
+  /* Scroll to next reel */
   const scrollToReel = (direction) => {
     if (!containerRef.current) return;
-    const currentIndex = reelsData.findIndex((r) => r.id === activeReelId);
+
+    const currentIndex = reels.findIndex((r) => r.id === activeReelId);
     let nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
 
-    if (nextIndex >= 0 && nextIndex < reelsData.length) {
-      const nextReel = document.querySelector(`[data-id="${reelsData[nextIndex].id}"]`);
+    if (nextIndex >= 0 && nextIndex < reels.length) {
+      const nextReel = document.querySelector(
+        `[data-id="${reels[nextIndex].id}"]`
+      );
       nextReel?.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  /* Loading UI */
+  if (reels.length === 0) {
+    return (
+      <div className="text-white flex items-center justify-center h-screen">
+        Loading reels...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black w-full h-[100dvh] flex items-center justify-center relative">
       <div
         ref={containerRef}
-        className="w-full md:w-[450px] h-[100dvh] md:h-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide no-scrollbar"
+        className={`w-full md:w-[450px] h-[100dvh] bg-black snap-y snap-mandatory scrollbar-hide ${
+          isFlippedGlobal ? "overflow-hidden" : "overflow-y-scroll"
+        }`}
       >
-        {reelsData.map((reel) => (
+        {reels.map((reel) => (
           <div
             key={reel.id}
             data-id={reel.id}
-            className="reel-section w-full h-[100dvh] md:h-full snap-start flex items-center justify-center md:py-8"
+            className="reel-section w-full h-[100dvh] snap-start flex items-center justify-center"
           >
             <ReelItem
               reel={reel}
@@ -248,35 +293,39 @@ export default function ReelPlayer() {
               isMuted={isMuted}
               toggleMute={() => setIsMuted(!isMuted)}
               isMobile={isMobile}
+              setIsFlippedGlobal={setIsFlippedGlobal}
             />
           </div>
         ))}
       </div>
 
-      {/* Desktop up/down nav */}
-      <div className="hidden md:flex fixed right-10 flex-col gap-4 text-white/50 z-50">
-        <button onClick={() => scrollToReel("up")} className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"><ChevronUp /></button>
-        <button onClick={() => scrollToReel("down")} className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"><ChevronDown /></button>
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex fixed right-10 flex-col gap-4 text-white z-50">
+        <button
+          onClick={() => scrollToReel("up")}
+          className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"
+        >
+          <ChevronUp />
+        </button>
+        <button
+          onClick={() => scrollToReel("down")}
+          className="p-4 bg-zinc-900 rounded-full hover:bg-zinc-800 transition"
+        >
+          <ChevronDown />
+        </button>
       </div>
 
-      {/* Mobile BottomNav + safe stacking */}
+      {/* Mobile BottomNav */}
       {isMobile && (
-        <>
-          {/* The CTA is inside ItineraryCard and positioned above BottomNav via CSS inline bottom offset.
-              This BottomNav is the app's bottom nav and sits at the very bottom. */}
-          <div
-            className="fixed left-0 right-0 bottom-0 z-50 md:hidden"
-            style={{
-              height: `${BOTTOM_NAV_HEIGHT}px`,
-              paddingBottom: "env(safe-area-inset-bottom, 0px)",
-              background: "transparent",
-            }}
-          >
-            <div className="w-full h-full">
-              <BottomNav />
-            </div>
-          </div>
-        </>
+        <div
+          className="fixed left-0 right-0 bottom-0 z-50 md:hidden"
+          style={{
+            height: `${BOTTOM_NAV_HEIGHT}px`,
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
+          <BottomNav />
+        </div>
       )}
     </div>
   );

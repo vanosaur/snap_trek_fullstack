@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes.js";
-import postRoutes from "./routes/postRoutes.js";
 import reelRoutes from "./routes/reelRoutes.js";
+import postUploadRoutes from "./routes/postUploadRoutes.js";
+import postFeedRoutes from "./routes/postFeedRoutes.js";
 
 import dotenv from "dotenv";
 
@@ -41,8 +42,10 @@ connectDB();
 
 // --- 4. Register Routes ---
 app.use("/api/auth", authRoutes);
-app.use("/api/posts", postRoutes);
 app.use("/api/reels", reelRoutes);
+app.use("/api/post-upload", postUploadRoutes);
+app.use("/api/postfeed", postFeedRoutes);
+
 
 
 // --- 5. Start Server ---

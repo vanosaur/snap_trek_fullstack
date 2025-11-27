@@ -2,18 +2,16 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "generate": "prisma generate",
     "migrate:deploy": "prisma migrate deploy",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed": "prisma db seed"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "bcryptjs": "^3.0.3",
