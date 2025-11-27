@@ -41,9 +41,10 @@ model Reel {
   itinerary_days Json?
   stay           Json?
 
-  createdAt      DateTime @default(now()) @map("createdat")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("reels")
 }
+
 
 
