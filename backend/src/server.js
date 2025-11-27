@@ -3,7 +3,10 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import reelRoutes from "./routes/reelRoutes.js";
+
 import dotenv from "dotenv";
+
 dotenv.config({ path: "../.env" });
 
 const app = express();
@@ -39,6 +42,8 @@ connectDB();
 // --- 4. Register Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/reels", reelRoutes);
+
 
 // --- 5. Start Server ---
 const PORT = process.env.PORT || 8080;

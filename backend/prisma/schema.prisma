@@ -1,48 +1,47 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-
-// This model is for your user accounts (you already have this)
 model User {
   id        Int      @id @default(autoincrement())
   name      String?
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
-  
-  // Add this line to create the relationship 
-  posts     Post[] 
+  posts     Post[]
 }
 
-// THIS IS THE NEW MODEL TO ADD
 model Post {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  
-  imageUrl    String    // The URL from Cloudinary
-  caption     String?   // A short text caption
-  location    String?   // e.g., "Paris, France"
-  
-  // This is your "killer feature" - the itinerary data
-  // We use `Json` so you can store a flexible list of
-  // { stay: "...", travel: "...", price: "..." }
-  itinerary   Json?
-  
-  // This creates the relation back to the User
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    Int      // This is the foreign key
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  imageUrl  String
+  caption   String?
+  location  String?
+  itinerary Json?
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
 }
 
+model Reel {
+  id             Int      @id @default(autoincrement())
+  title          String
+  place          String?
+  video_url      String
+  image_url      String?
+  rating         Float?
+  seats          Int?
+  price          Int?
+  duration       String?
+  highlights     Json?
+  itinerary_days Json?
+  stay           Json?
+  createdAt      DateTime @default(now())
+
+  @@map("reels")
+}
 
