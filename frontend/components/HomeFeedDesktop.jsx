@@ -13,7 +13,7 @@ export default function HomeFeedDesktop({ onCreateClick }) {
   useEffect(() => {
     async function loadPosts() {
       try {
-        const res = await fetch("https://snap-trek-fullstack.onrender.com/api/posts");
+        const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
         const data = await res.json();
         setPosts(data);
       } catch (err) {
@@ -27,6 +27,7 @@ export default function HomeFeedDesktop({ onCreateClick }) {
 
   return (
     <main className="w-full h-full overflow-y-auto no-scrollbar">
+
       {/* Mobile sticky header */}
       <div className="md:hidden sticky top-0 z-30 glass-panel border-b border-white/5 rounded-none">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -34,7 +35,9 @@ export default function HomeFeedDesktop({ onCreateClick }) {
             <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-teal-500/20">
               <Camera className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">SnapTrek</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">
+              SnapTrek
+            </h1>
           </div>
 
           <button
@@ -47,7 +50,8 @@ export default function HomeFeedDesktop({ onCreateClick }) {
       </div>
 
       <div className="px-4 pt-6 pb-24 md:pb-10">
-        {/* Stories (mobile) */}
+
+        {/* Stories (Mobile) */}
         <div className="md:hidden mb-8 flex items-center gap-4">
           <button className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 shrink-0">
             <Plus className="w-6 h-6" />
@@ -58,7 +62,7 @@ export default function HomeFeedDesktop({ onCreateClick }) {
           </div>
         </div>
 
-        {/* Desktop Stories */}
+        {/* Stories (Desktop) */}
         <div className="hidden md:block mb-10">
           <div className="glass-panel p-4 rounded-2xl">
             <div className="flex items-center gap-4">
@@ -70,26 +74,30 @@ export default function HomeFeedDesktop({ onCreateClick }) {
           </div>
         </div>
 
-        {/* Posts */}
+        {/* Posts Section */}
         <div className="space-y-8">
-          {/* Loading state */}
+
+          {/* Loading State */}
           {loading && (
             <div className="text-white text-center py-10 opacity-60">
               Loading posts...
             </div>
           )}
 
-          {/* If no posts */}
+          {/* Empty State */}
           {!loading && posts.length === 0 && (
             <div className="text-white text-center py-10 opacity-60">
               No posts yet. Be the first to upload!
             </div>
           )}
 
-          {/* Render posts */}
-          {posts.map((p) => (
-            <PostCardDesktop key={p.id} post={p} />
-          ))}
+          {/* Render Posts */}
+          {!loading &&
+            posts.map((p) => (
+              <PostCardDesktop key={p.id} post={p} />
+            ))
+          }
+
         </div>
       </div>
     </main>
