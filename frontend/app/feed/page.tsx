@@ -1,11 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import DesktopSidebar from "../../components/DesktopSidebar";
 import HomeFeedDesktop from "../../components/HomeFeedDesktop";
 import BottomNav from "../../components/BottomNav";
 
+
 export default function Home() {
+  const router = useRouter();
   return (
+    
     // Added md:flex-row so sidebar and content sit side-by-side on desktop
     <div className="bg-black min-h-screen text-white flex flex-col md:flex-row">
 
@@ -16,7 +20,9 @@ export default function Home() {
 
       {/* --- DESKTOP ONLY: Left Sidebar --- */}
       <aside className="hidden md:block w-[250px] lg:w-[300px] border-r border-gray-800 min-h-screen sticky top-0 h-screen overflow-y-auto">
-        <DesktopSidebar active="home" onCreateClick={() => {}} />
+        <DesktopSidebar active="home" onCreateClick={() => {
+          router.push("/upload");
+        }} />
       </aside>
 
       {/* --- VISIBLE ON ALL SCREENS: Main Feed --- */}
