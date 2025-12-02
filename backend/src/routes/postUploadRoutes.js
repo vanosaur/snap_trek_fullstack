@@ -40,4 +40,22 @@ router.get("/", async (req, res) => {
   }
 });
 
+// DELETE /api/posts/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+
+    // 1. (Optional) Check if post exists and belongs to user
+    // For now, we just delete it directly
+    await prisma.post.delete({
+      where: { id: postId }
+    });
+
+    res.json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).json({ error: "Failed to delete post" });
+  }
+});
+
 export default router;

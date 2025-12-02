@@ -3,30 +3,34 @@
 import { useState, useEffect } from "react";
 import StoriesBar from "./StoriesBar";
 import PostCardDesktop from "./PostCardDesktop";
-import { Plus, Camera } from "lucide-react";
+import UploadPost from "../app/upload/post/page.jsx"; // 1. IMPORT THE UPLOAD COMPONENT
+import { Plus, Camera, X } from "lucide-react"; // Added X for close button
 
 export default function HomeFeedDesktop({ onCreateClick }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isUploadOpen, setIsUploadOpen] = useState(false); // <--- 2. ADD MODAL STATE
 
-  // Fetch posts from backend
-  useEffect(() => {
-    async function loadPosts() {
-      try {
-        const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        console.error("Failed to fetch posts:", err);
-      } finally {
-        setLoading(false);
-      }
+  // 3. DEFINE FETCH FUNCTION (Reusable)
+  async function fetchPosts() {
+    try {
+      const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
+      const data = await res.json();
+      setPosts(data);
+    } catch (err) {
+      console.error("Failed to fetch posts:", err);
+    } finally {
+      setLoading(false);
     }
-    loadPosts();
+  }
+
+  // Load on mount
+  useEffect(() => {
+    fetchPosts();
   }, []);
 
   return (
-    <main className="w-full h-full overflow-y-auto no-scrollbar">
+    <main className="w-full h-full overflow-y-auto no-scrollbar relative">
 
       {/* Mobile sticky header */}
       <div className="md:hidden sticky top-0 z-30 glass-panel border-b border-white/5 rounded-none">
@@ -40,8 +44,9 @@ export default function HomeFeedDesktop({ onCreateClick }) {
             </h1>
           </div>
 
+          {/* UPDATE: Button now opens local modal */}
           <button
-            onClick={onCreateClick}
+            onClick={() => setIsUploadOpen(true)} 
             className="w-9 h-9 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 active:scale-90 transition-transform"
           >
             <Plus className="w-5 h-5" />
@@ -53,7 +58,10 @@ export default function HomeFeedDesktop({ onCreateClick }) {
 
         {/* Stories (Mobile) */}
         <div className="md:hidden mb-8 flex items-center gap-4">
-          <button className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 shrink-0">
+          <button 
+             onClick={() => setIsUploadOpen(true)} // <-- Update trigger
+             className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 shrink-0"
+          >
             <Plus className="w-6 h-6" />
           </button>
 
@@ -66,7 +74,10 @@ export default function HomeFeedDesktop({ onCreateClick }) {
         <div className="hidden md:block mb-10">
           <div className="glass-panel p-4 rounded-2xl">
             <div className="flex items-center gap-4">
-              <button className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 hover:bg-teal-500/20 transition-colors shrink-0">
+              <button 
+                onClick={() => setIsUploadOpen(true)} // <-- Update trigger
+                className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 hover:bg-teal-500/20 transition-colors shrink-0"
+              >
                 <Plus className="w-6 h-6" />
               </button>
               <StoriesBar />
@@ -76,30 +87,51 @@ export default function HomeFeedDesktop({ onCreateClick }) {
 
         {/* Posts Section */}
         <div className="space-y-8">
-
-          {/* Loading State */}
           {loading && (
             <div className="text-white text-center py-10 opacity-60">
               Loading posts...
             </div>
           )}
 
-          {/* Empty State */}
           {!loading && posts.length === 0 && (
             <div className="text-white text-center py-10 opacity-60">
               No posts yet. Be the first to upload!
             </div>
           )}
 
-          {/* Render Posts */}
           {!loading &&
             posts.map((p) => (
-              <PostCardDesktop key={p.id} post={p} />
+              <PostCardDesktop key={p.id || p._id} post={p} />
             ))
           }
-
         </div>
       </div>
+
+      {/* 4. ADD THE UPLOAD MODAL OVERLAY */}
+      {isUploadOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg">
+            
+            {/* Close Button */}
+            <button 
+                onClick={() => setIsUploadOpen(false)}
+                className="absolute top-4 right-4 z-[60] text-white bg-black/50 p-2 rounded-full hover:bg-black/70 transition"
+            >
+                <X size={20} />
+            </button>
+
+            {/* The Upload Component */}
+            <UploadPost 
+              onClose={() => setIsUploadOpen(false)} 
+              onUploadSuccess={() => {
+                fetchPosts(); // <--- REFRESH THE FEED AUTOMATICALLY
+                setIsUploadOpen(false); 
+              }} 
+            />
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

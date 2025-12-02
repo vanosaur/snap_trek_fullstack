@@ -26,4 +26,20 @@ router.get("/", getAllPosts);
 // Create a new post (MUST be logged in)
 router.post("/", protect, createPost);
 
+// Add this inside your existing postRoutes.js (or postUploadRoutes.js)
+
+// DELETE /api/posts/:id
+// routes/postRoutes.js
+
+// DELETE /api/posts/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    await prisma.post.delete({ where: { id: postId } });
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete" });
+  }
+});
+
 export default router;

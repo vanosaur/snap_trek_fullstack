@@ -22,8 +22,28 @@ CREATE TABLE "Post" (
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "reels" (
+    "id" BIGSERIAL NOT NULL,
+    "title" TEXT,
+    "place" TEXT,
+    "video_url" TEXT,
+    "image_url" TEXT,
+    "rating" REAL,
+    "seats" INTEGER,
+    "price" INTEGER,
+    "duration" TEXT,
+    "highlights" JSONB,
+    "itinerary_days" JSONB,
+    "stay" JSONB,
+    "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "reels_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

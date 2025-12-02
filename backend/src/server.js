@@ -5,6 +5,9 @@ import authRoutes from "./routes/authRoutes.js";
 import reelRoutes from "./routes/reelRoutes.js";
 import postUploadRoutes from "./routes/postUploadRoutes.js";
 import postFeedRoutes from "./routes/postFeedRoutes.js";
+import storyRoutes from "./routes/storyRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
 
 import dotenv from "dotenv";
 
@@ -45,6 +48,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/reels", reelRoutes);
 app.use("/api/post-upload", postUploadRoutes);
 app.use("/api/postfeed", postFeedRoutes);
+app.use("/api", storyRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
 
 
 
