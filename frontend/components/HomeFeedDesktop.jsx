@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import StoriesBar from "./StoriesBar";
 import PostCardDesktop from "./PostCardDesktop";
-import UploadPost from "../app/upload/post/page.jsx"; // 1. IMPORT THE UPLOAD COMPONENT
+import UploadPost from "./UploadPost"; // Ensure this import matches the new file location
 import { Plus, Camera, X } from "lucide-react"; // Added X for close button
 
 export default function HomeFeedDesktop({ onCreateClick }) {
