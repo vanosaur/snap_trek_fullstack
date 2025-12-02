@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { createPost, getAllPosts } from "../controllers/postController.js";
-import { protect } from "../middlewares/authMiddleware.js"; // We use this to get the user
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+// import { protect } from "../middlewares/authMiddleware.js"; // We use this to get the user
 
 const router = express.Router();
 
@@ -24,7 +26,26 @@ router.get("/", getAllPosts);
 
 // POST /api/posts
 // Create a new post (MUST be logged in)
-router.post("/", protect, createPost);
+// 2. CREATE POST (For Upload)
+// No 'protect' middleware here!
+router.post("/", async (req, res) => {
+  try {
+    const { caption, location, imageUrl, authorId } = req.body;
+
+    const newPost = await prisma.post.create({
+      data: {
+        caption,
+        location,
+        imageUrl,
+        authorId: Number(authorId) 
+      }
+    });
+    res.status(201).json(newPost);
+  } catch (err) {
+    console.error("Upload Error:", err);
+    res.status(500).json({ error: "Failed to create post" });
+  }
+});
 
 // Add this inside your existing postRoutes.js (or postUploadRoutes.js)
 

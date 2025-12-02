@@ -4,46 +4,53 @@ import { PrismaClient } from "@prisma/client";
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// FIX BIGINT IN ALL NESTED OBJECTS
+function fixBigInt(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(fixBigInt);
+  }
+  if (obj !== null && typeof obj === "object") {
+    const fixed = {};
+    for (let key in obj) {
+      const value = obj[key];
+      fixed[key] = typeof value === "bigint" ? value.toString() : fixBigInt(value);
+    }
+    return fixed;
+  }
+  return obj;
+}
+
 // ----------------------------
-// GET all reels
+// GET reels
 // ----------------------------
 router.get("/", async (req, res) => {
   try {
     const reels = await prisma.reel.findMany({
       orderBy: { id: "desc" }
     });
-    res.json(reels);
+
+    const fixed = fixBigInt(reels);
+    return res.json(fixed); // ✅ FIXED — NO BIGINT ANYWHERE
   } catch (err) {
     console.error("ERROR FETCHING REELS:", err);
-    res.status(500).json({ error: "Failed to fetch reels" });
+    return res.status(500).json({ error: err.message });
   }
 });
 
 // ----------------------------
-// POST create a new reel
+// POST reels
 // ----------------------------
 router.post("/", async (req, res) => {
   try {
     const reel = await prisma.reel.create({
-      data: {
-        title: req.body.title,
-        place: req.body.place,
-        video_url: req.body.video_url,
-        image_url: req.body.image_url,
-        rating: req.body.rating,
-        seats: req.body.seats,
-        price: req.body.price,
-        duration: req.body.duration,
-        highlights: req.body.highlights,
-        itinerary_days: req.body.itinerary_days,
-        stay: req.body.stay
-      }
+      data: req.body,
     });
 
-    res.json(reel);
+    const fixed = fixBigInt(reel);
+    return res.json(fixed); // ✅ FIXED
   } catch (err) {
     console.error("ERROR CREATING REEL:", err);
-    res.status(500).json({ error: "Failed to create reel" });
+    return res.status(500).json({ error: err.message });
   }
 });
 
