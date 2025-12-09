@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import DesktopSidebar from "../../components/DesktopSidebar";
 import HomeFeedDesktop from "../../components/HomeFeedDesktop";
+import StoriesBar from "../../components/StoriesBar";
 import BottomNav from "../../components/BottomNav";
 
 
 export default function Home() {
   const router = useRouter();
   return (
-    
+
     // Added md:flex-row so sidebar and content sit side-by-side on desktop
     <div className="bg-black min-h-screen text-white flex flex-col md:flex-row">
 
@@ -30,7 +31,7 @@ export default function Home() {
       <main className="flex-1 flex justify-center px-4 py-6 mb-20 md:mb-0">
         <div className="w-full max-w-[650px]">
           {/* Even though it is named HomeFeedDesktop, we reuse it for mobile for now */}
-          <HomeFeedDesktop onCreateClick={() => {}} />
+          <HomeFeedDesktop onCreateClick={() => { }} />
         </div>
       </main>
 

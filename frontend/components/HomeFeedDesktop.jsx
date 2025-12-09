@@ -6,27 +6,69 @@ import PostCardDesktop from "./PostCardDesktop";
 import UploadPost from "./UploadPost"; // Ensure this import matches the new file location
 import { Plus, Camera, X } from "lucide-react"; // Added X for close button
 
-export default function HomeFeedDesktop({ onCreateClick }) {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isUploadOpen, setIsUploadOpen] = useState(false); // <--- 2. ADD MODAL STATE
+// --- Dummy Data ---
+const DUMMY_POSTS = [
+  {
+    id: "1",
+    author: { name: "Vani", avatar: "https://i.pravatar.cc/150?u=vani" },
+    location: "Paris, France",
+    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+    caption: "Sunset in Paris! 🗼✨ #travel #france",
+    likes: 124,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    author: { name: "AlexR", avatar: "https://i.pravatar.cc/150?u=alex" },
+    location: "Kyoto, Japan",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    caption: "The bamboo forest is magical. 🎍",
+    likes: 89,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+  },
+  {
+    id: "3",
+    author: { name: "TravelBug", avatar: "https://i.pravatar.cc/150?u=bug" },
+    location: "Santorini, Greece",
+    imageUrl: "https://images.unsplash.com/photo-1613395877344-13d4c79e42d0?auto=format&fit=crop&w=800&q=80",
+    caption: "Blue domes and white walls. 🇬🇷💙",
+    likes: 256,
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+  },
+  {
+    id: "4",
+    author: { name: "PhotoJane", avatar: "https://i.pravatar.cc/150?u=jane" },
+    location: "New York City, USA",
+    imageUrl: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80",
+    caption: "Concrete jungle where dreams are made of. 🗽",
+    likes: 543,
+    createdAt: new Date(Date.now() - 10000000).toISOString(),
+  },
+];
 
-  // 3. DEFINE FETCH FUNCTION (Reusable)
+export default function HomeFeedDesktop({ onCreateClick }) {
+  const [posts, setPosts] = useState(DUMMY_POSTS); // Initialize with dummy data
+  const [loading, setLoading] = useState(false); // No loading state needed for mock
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+  // Define fetch function if we want to mix real data later, but for now use Mock
   async function fetchPosts() {
-    try {
-      const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
-      const data = await res.json();
-      setPosts(data);
-    } catch (err) {
-      console.error("Failed to fetch posts:", err);
-    } finally {
-      setLoading(false);
-    }
+     // Optional: Check backend, if empty keep dummy
+     try {
+       /* 
+       const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
+       const data = await res.json();
+       if (Array.isArray(data) && data.length > 0) {
+          setPosts(data);
+       }
+       */
+     } catch (err) {
+       console.error(err);
+     }
   }
 
-  // Load on mount
   useEffect(() => {
-    fetchPosts();
+    // fetchPosts(); 
   }, []);
 
   return (
@@ -44,7 +86,6 @@ export default function HomeFeedDesktop({ onCreateClick }) {
             </h1>
           </div>
 
-          {/* UPDATE: Button now opens local modal */}
           <button
             onClick={() => setIsUploadOpen(true)} 
             className="w-9 h-9 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 active:scale-90 transition-transform"
@@ -56,54 +97,16 @@ export default function HomeFeedDesktop({ onCreateClick }) {
 
       <div className="px-4 pt-6 pb-24 md:pb-10">
 
-        {/* Stories (Mobile) */}
-        <div className="md:hidden mb-8 flex items-center gap-4">
-          <button 
-             onClick={() => setIsUploadOpen(true)} // <-- Update trigger
-             className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 shrink-0"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-
-          <div className="flex-1 overflow-x-auto no-scrollbar">
-            <StoriesBar mobile />
-          </div>
-        </div>
-
-        {/* Stories (Desktop) */}
-        <div className="hidden md:block mb-10">
-          <div className="glass-panel p-4 rounded-2xl">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setIsUploadOpen(true)} // <-- Update trigger
-                className="w-16 h-16 rounded-full border-2 border-dashed border-teal-500/50 flex items-center justify-center text-teal-500 bg-teal-500/10 hover:bg-teal-500/20 transition-colors shrink-0"
-              >
-                <Plus className="w-6 h-6" />
-              </button>
-              <StoriesBar />
-            </div>
-          </div>
+        {/* Stories Section (Unified for Mobile & Desktop) */}
+        <div className="mb-8">
+           <StoriesBar />
         </div>
 
         {/* Posts Section */}
         <div className="space-y-8">
-          {loading && (
-            <div className="text-white text-center py-10 opacity-60">
-              Loading posts...
-            </div>
-          )}
-
-          {!loading && posts.length === 0 && (
-            <div className="text-white text-center py-10 opacity-60">
-              No posts yet. Be the first to upload!
-            </div>
-          )}
-
-          {!loading &&
-            posts.map((p) => (
-              <PostCardDesktop key={p.id || p._id} post={p} />
-            ))
-          }
+          {posts.map((p) => (
+             <PostCardDesktop key={p.id} post={p} />
+          ))}
         </div>
       </div>
 
