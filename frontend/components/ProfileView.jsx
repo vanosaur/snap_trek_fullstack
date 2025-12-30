@@ -1,26 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, User, MapPin, Grid } from "lucide-react";
+import { Trash2, User, MapPin, Grid, Briefcase } from "lucide-react";
+import EditProfileModal from "./EditProfileModal";
 
-// Change this to your live URL if deploying, or keep localhost for testing
-const API_BASE_URL = "https://snap-trek-fullstack.onrender.com"; 
-
-// TEMPORARY: using ID 1 until you have full login persistence
-const CURRENT_USER_ID = 1; 
+import api from "../utils/api"; 
 
 export default function ProfileView() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   // 1. Fetch Profile Data
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/users/${CURRENT_USER_ID}`);
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        const data = await res.json();
-        setProfile(data);
+        const res = await api.get("/auth/profile");
+        // api.get returns the response object, so res.data is the payload
+        setProfile(res.data);
       } catch (err) {
         console.error("Error loading profile:", err);
       } finally {
@@ -35,21 +32,17 @@ export default function ProfileView() {
     if (!confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
-        method: "DELETE",
-      });
+      await api.delete(`/posts/${postId}`);
 
-      if (res.ok) {
-        // Remove the deleted post from the screen immediately
-        setProfile((prev) => ({
-          ...prev,
-          posts: prev.posts.filter((p) => p.id !== postId),
-        }));
-      } else {
-        alert("Could not delete post.");
-      }
+      // Remove the deleted post from the screen immediately
+      setProfile((prev) => ({
+        ...prev,
+        posts: prev.posts.filter((p) => p.id !== postId),
+      }));
+
     } catch (err) {
       console.error("Delete failed:", err);
+      alert("Could not delete post.");
     }
   }
 
@@ -75,6 +68,29 @@ export default function ProfileView() {
         {/* Name & Username */}
         <h2 className="text-2xl font-bold text-white">{profile.name || "SnapTrek User"}</h2>
         <p className="text-white/40">@{profile.username || "user" + profile.id}</p>
+        
+        {profile.bio && (
+            <p className="text-white/70 text-sm mt-3 max-w-md text-center leading-relaxed">
+                {profile.bio}
+            </p>
+        )}
+
+        {/* Edit Button */}
+        <button 
+            onClick={() => setIsEditOpen(true)}
+            className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-sm font-semibold text-white transition"
+        >
+            Edit Profile
+        </button>
+
+        {/* Edit Modal */}
+        {isEditOpen && (
+            <EditProfileModal 
+                user={profile} 
+                onClose={() => setIsEditOpen(false)} 
+                onUpdateSuccess={(updatedUser) => setProfile(prev => ({ ...prev, ...updatedUser }))}
+            />
+        )}
 
         {/* Stats */}
         <div className="flex items-center gap-8 mt-6 p-4 glass-panel rounded-2xl border border-white/5 bg-white/5">
@@ -84,12 +100,12 @@ export default function ProfileView() {
           </div>
           <div className="w-[1px] h-8 bg-white/10" />
           <div className="text-center">
-            <span className="block font-bold text-xl text-white">0</span>
+            <span className="block font-bold text-xl text-white">{profile.followers || 0}</span>
             <span className="text-xs text-white/40 uppercase tracking-wider">Followers</span>
           </div>
           <div className="w-[1px] h-8 bg-white/10" />
           <div className="text-center">
-            <span className="block font-bold text-xl text-white">0</span>
+            <span className="block font-bold text-xl text-white">{profile.following || 0}</span>
             <span className="text-xs text-white/40 uppercase tracking-wider">Following</span>
           </div>
         </div>

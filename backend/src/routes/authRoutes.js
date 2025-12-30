@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors"; // <-- Import CORS here
-import { signup, login, profile } from "../controllers/authController.js";
+import { signup, login, profile, updateProfile } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -31,5 +31,6 @@ router.use(cors(corsOptions));
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/profile", protect, profile);
+router.put("/profile", protect, updateProfile);
 
 export default router;

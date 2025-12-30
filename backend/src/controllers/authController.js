@@ -41,11 +41,59 @@ export const login = async (req, res) => {
   }
 };
 
+// Update Profile
+export const updateProfile = async (req, res) => {
+  const { name, username, bio, avatar } = req.body;
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        name,
+        username,
+        bio,
+        avatar,
+      },
+    });
+
+    // Return the updated user (similar structure to profile endpoint)
+    res.json({
+      ...updatedUser,
+      posts: [], // Or fetch posts if needed, but usually redundant for an update response
+    });
+  } catch (err) {
+    console.error("Update Profile Error:", err);
+    res.status(500).json({ message: "Could not update profile" });
+  }
+};
+
 export const profile = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    res.json(user);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: {
+        posts: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Use REAL data now (fallbacks only if fields are empty)
+    const enhancedUser = {
+      ...user,
+      username: user.username || user.email.split("@")[0],
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=0D9488&color=fff`,
+      bio: user.bio || "",
+      followers: 128, // Still mocked until we have a Follow model
+      following: 42,  // Still mocked until we have a Follow model
+    };
+
+    res.json(enhancedUser);
   } catch (err) {
+    console.error("Profile Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

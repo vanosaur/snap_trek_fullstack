@@ -1,5 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -40,10 +41,19 @@ router.get("/", async (req, res) => {
 // ----------------------------
 // POST reels
 // ----------------------------
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
+    const reelData = {
+      ...req.body,
+      authorId: req.user.id
+    };
+
+    if (!reelData.video_url || !reelData.image_url) {
+        return res.status(400).json({ error: "Video and Thumbnail URLs are required" });
+    }
+
     const reel = await prisma.reel.create({
-      data: req.body,
+      data: reelData,
     });
 
     const fixed = fixBigInt(reel);

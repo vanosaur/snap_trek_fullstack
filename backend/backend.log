@@ -1,0 +1,36 @@
+
+> backend@1.0.0 dev
+> nodemon src/server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node src/server.js`[39m
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from ../.env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+🚀 Server running on port 4000
+✅ Connected to Neon MySQL successfully
+Upload Error: ReferenceError: prisma is not defined
+    at file:///Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/src/routes/postRoutes.js:24:21
+    at Layer.handleRequest (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/layer.js:152:17)
+    at /Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:295:15
+    at processParams (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:582:12)
+    at next (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:291:5)
+    at router.handle (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:186:3)
+Upload Error: ReferenceError: prisma is not defined
+    at file:///Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/src/routes/postRoutes.js:24:21
+    at Layer.handleRequest (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/lib/layer.js:152:17)
+    at /Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:295:15
+    at processParams (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:582:12)
+    at next (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:291:5)
+    at router.handle (/Users/vanirudra/Desktop/NEW_snap_trek_fullstack/snap_trek_fullstack/backend/node_modules/router/index.js:186:3)

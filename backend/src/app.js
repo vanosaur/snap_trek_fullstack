@@ -1,8 +1,12 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import reelRoutes from "./routes/reelRoutes.js";
+import storyRoutes from "./routes/storyRoutes.js";
 
 const app = express();
+
 
 // ✅ Enable CORS
 app.use(
@@ -17,6 +21,10 @@ app.use(express.json());
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/reels", reelRoutes);
+app.use("/api/stories", storyRoutes);
+
 
 // ✅ Test route
 app.get("/", (req, res) => {

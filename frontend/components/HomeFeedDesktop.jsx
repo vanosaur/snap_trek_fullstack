@@ -5,6 +5,7 @@ import StoriesBar from "./StoriesBar";
 import PostCardDesktop from "./PostCardDesktop";
 import UploadPost from "./UploadPost"; // Ensure this import matches the new file location
 import { Plus, Camera, X } from "lucide-react"; // Added X for close button
+import api from "../utils/api";
 
 // --- Dummy Data ---
 const DUMMY_POSTS = [
@@ -47,28 +48,27 @@ const DUMMY_POSTS = [
 ];
 
 export default function HomeFeedDesktop({ onCreateClick }) {
-  const [posts, setPosts] = useState(DUMMY_POSTS); // Initialize with dummy data
-  const [loading, setLoading] = useState(false); // No loading state needed for mock
+  const [posts, setPosts] = useState([]); // Start with empty, fetch from backend
+  const [loading, setLoading] = useState(true); // Loading state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // Define fetch function if we want to mix real data later, but for now use Mock
   async function fetchPosts() {
-     // Optional: Check backend, if empty keep dummy
+     setLoading(true);
      try {
-       /* 
-       const res = await fetch("https://snap-trek-fullstack.onrender.com/api/postfeed");
-       const data = await res.json();
-       if (Array.isArray(data) && data.length > 0) {
-          setPosts(data);
-       }
-       */
+        const res = await api.get("/posts");
+        if (Array.isArray(res.data)) {
+           setPosts(res.data);
+        }
      } catch (err) {
-       console.error(err);
+        console.error("Error fetching posts:", err);
+     } finally {
+        setLoading(false);
      }
   }
 
   useEffect(() => {
-    // fetchPosts(); 
+    fetchPosts(); 
   }, []);
 
   return (
@@ -104,9 +104,22 @@ export default function HomeFeedDesktop({ onCreateClick }) {
 
         {/* Posts Section */}
         <div className="space-y-8">
-          {posts.map((p) => (
-             <PostCardDesktop key={p.id} post={p} />
-          ))}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin" />
+              <p className="text-gray-400">Loading your feed...</p>
+            </div>
+          ) : posts.length > 0 ? (
+            posts.map((p) => (
+               <PostCardDesktop key={p.id} post={p} />
+            ))
+          ) : (
+            <div className="text-center py-20 glass-panel border-white/5 p-10 rounded-3xl">
+              <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white">No Posts Yet</h3>
+              <p className="text-gray-400 mt-2">Be the first to share your adventure!</p>
+            </div>
+          )}
         </div>
       </div>
 
