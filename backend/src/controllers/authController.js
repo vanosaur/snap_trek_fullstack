@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { fixBigInt } from "../utils/serialization.js";
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -66,21 +67,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Helper to handle BigInt serialization
-function fixBigInt(obj) {
-  if (Array.isArray(obj)) {
-    return obj.map(fixBigInt);
-  }
-  if (obj !== null && typeof obj === "object") {
-    const fixed = {};
-    for (let key in obj) {
-      const value = obj[key];
-      fixed[key] = typeof value === "bigint" ? value.toString() : fixBigInt(value);
-    }
-    return fixed;
-  }
-  return obj;
-}
+// fixBigInt helper removed as it's now centralized in src/utils/serialization.js
 
 export const profile = async (req, res) => {
   try {

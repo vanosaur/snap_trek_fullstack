@@ -14,7 +14,8 @@ import chatRoutes from "./routes/chatRoutes.js";
 
 
 import dotenv from "dotenv";
-dotenv.config({ path: "../.env" });
+dotenv.config(); // Load from .env
+dotenv.config({ path: "../.env" }); // Fallback for monorepo-style setup
 
 const app = express();
 const prisma = new PrismaClient();
@@ -29,10 +30,13 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps or curl) or if origin is in the list
+    // OR if it's a Vercel preview URL (regex check)
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS: " + origin));
+      console.warn("CORS blocked origin:", origin);
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
@@ -70,7 +74,12 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.get("/", (req, res) => {
-  res.send("🚀 SnapTrek Backend Active (API at /api)");
+  res.json({
+    message: "🚀 SnapTrek Backend Active",
+    status: "READY",
+    database: process.env.DATABASE_URL ? "CONFIGURED" : "MISSING",
+    environment: process.env.NODE_ENV || "development"
+  });
 });
 
 

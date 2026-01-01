@@ -1,25 +1,10 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { protect } from "../middlewares/authMiddleware.js";
+import { fixBigInt } from "../utils/serialization.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
-
-// FIX BIGINT IN ALL NESTED OBJECTS
-function fixBigInt(obj) {
-  if (Array.isArray(obj)) {
-    return obj.map(fixBigInt);
-  }
-  if (obj !== null && typeof obj === "object") {
-    const fixed = {};
-    for (let key in obj) {
-      const value = obj[key];
-      fixed[key] = typeof value === "bigint" ? value.toString() : fixBigInt(value);
-    }
-    return fixed;
-  }
-  return obj;
-}
 
 // ----------------------------
 // GET reels

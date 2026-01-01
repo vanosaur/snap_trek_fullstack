@@ -1,7 +1,16 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!url) {
+    console.warn("NEXT_PUBLIC_API_BASE_URL is not defined. Falling back to localhost:8080");
+    return "http://localhost:8080/api";
+  }
+  return url.endsWith("/api") ? url : `${url}/api`;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + "/api",
+  baseURL: getBaseURL(),
 });
 
 api.interceptors.request.use(
