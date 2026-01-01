@@ -64,4 +64,39 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
+// ----------------------------
+// DELETE BOOKING
+// ----------------------------
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    const bookingId = BigInt(req.params.id);
+    const userId = req.user.id;
+
+    // Find the booking
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    // Check if booking exists
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Check ownership
+    if (booking.userId !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this booking" });
+    }
+
+    // Delete the booking
+    await prisma.booking.delete({
+      where: { id: bookingId },
+    });
+
+    res.json({ message: "Booking deleted successfully" });
+  } catch (err) {
+    console.error("Delete Booking Error:", err);
+    res.status(500).json({ message: "Failed to delete booking", error: err.message });
+  }
+});
+
 export default router;

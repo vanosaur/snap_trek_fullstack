@@ -126,6 +126,35 @@ export default function ProfileView() {
     }
   }
 
+  // 3b. Handle Unsave Reel (from Saved tab)
+  async function handleUnsaveReel(reelId) {
+    if (!confirm("Remove this reel from saved?")) return;
+
+    try {
+      await api.delete(`/reels/${reelId}/save`);
+      setProfile((prev) => ({
+        ...prev,
+        savedReels: prev.savedReels.filter((item) => item.reel.id !== reelId.toString()),
+      }));
+    } catch (err) {
+      console.error("Unsave reel failed:", err);
+      alert("Could not unsave reel.");
+    }
+  }
+
+  // 3c. Handle Delete Booking
+  async function handleDeleteBooking(bookingId) {
+    if (!confirm("Are you sure you want to cancel this booking?")) return;
+
+    try {
+      await api.delete(`/bookings/${bookingId}`);
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId.toString()));
+    } catch (err) {
+      console.error("Delete booking failed:", err);
+      alert("Could not delete booking.");
+    }
+  }
+
   // 4. Handle Reel Selection
   const [selectedReel, setSelectedReel] = useState(null);
 
@@ -481,6 +510,20 @@ export default function ProfileView() {
                       <Play size={24} className="text-white fill-white ml-1" />
                     </div>
                   </div>
+                  
+                  {/* Delete Button Overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                      <button 
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnsaveReel(item.reel.id);
+                          }}
+                          className="p-3 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition transform hover:scale-110"
+                          title="Remove from Saved"
+                      >
+                          <Trash2 size={20} />
+                      </button>
+                  </div>
               </div>
               ))
           )}
@@ -521,11 +564,18 @@ export default function ProfileView() {
                                   </div>
                               </div>
 
-                              {/* Status */}
-                              <div className="flex flex-col items-end justify-between">
+                              {/* Status and Delete */}
+                              <div className="flex flex-col items-end justify-between gap-2">
                                   <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-bold uppercase rounded-md border border-green-500/30">
                                       {booking.status}
                                   </span>
+                                  <button
+                                      onClick={() => handleDeleteBooking(booking.id)}
+                                      className="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition"
+                                      title="Cancel Booking"
+                                  >
+                                      <Trash2 size={16} />
+                                  </button>
                               </div>
                           </div>
                       ))}

@@ -217,4 +217,43 @@ router.post("/:id/save", protect, async (req, res) => {
   }
 });
 
+// ----------------------------
+// DELETE SAVED REEL (Unsave)
+// ----------------------------
+router.delete("/:id/save", protect, async (req, res) => {
+  try {
+    const reelId = BigInt(req.params.id);
+    const userId = req.user.id;
+
+    // Check if saved
+    const existingSave = await prisma.savedReel.findUnique({
+      where: {
+        userId_reelId: {
+          userId: userId,
+          reelId: reelId,
+        },
+      },
+    });
+
+    if (!existingSave) {
+      return res.status(404).json({ message: "Reel not saved" });
+    }
+
+    // Delete the saved reel
+    await prisma.savedReel.delete({
+      where: {
+        userId_reelId: {
+          userId: userId,
+          reelId: reelId,
+        },
+      },
+    });
+
+    res.json({ message: "Reel unsaved successfully" });
+  } catch (err) {
+    console.error("Unsave Reel Error:", err);
+    res.status(500).json({ message: "Failed to unsave reel", error: err.message });
+  }
+});
+
 export default router;
