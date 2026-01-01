@@ -65,7 +65,6 @@ export default function ItineraryCard({ reel, onClose, isMobile }) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Create Booking API
-      await api.post("/bookings", {
       const response = await api.post("/bookings", {
         reelId: reel.id,
         guests,
