@@ -69,7 +69,7 @@ router.get("/", protect, async (req, res) => {
 // ----------------------------
 router.delete("/:id", protect, async (req, res) => {
   try {
-    const bookingId = BigInt(req.params.id);
+    const bookingId = parseInt(req.params.id);
     const userId = req.user.id;
 
     // Find the booking
