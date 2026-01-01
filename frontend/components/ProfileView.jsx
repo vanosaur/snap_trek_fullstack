@@ -58,6 +58,8 @@ export default function ProfileView() {
   
   const [bookings, setBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
+  
+  const [followModal, setFollowModal] = useState({ isOpen: false, title: "", users: [] });
 
   // 1. Fetch Profile Data
   useEffect(() => {
@@ -146,6 +148,18 @@ export default function ProfileView() {
     setSelectedPost(null);
   }
 
+  // 6. Handle Follow Lists
+  async function handleShowFollows(type) {
+    if (!profile) return;
+    const title = type === "followers" ? "Followers" : "Following";
+    try {
+      const res = await api.get(`/users/${profile.id}/${type}`);
+      setFollowModal({ isOpen: true, title, users: res.data });
+    } catch (err) {
+      console.error(`Failed to fetch ${type}:`, err);
+    }
+  }
+
   if (loading) return <div className="text-white/50 text-center mt-20">Loading profile...</div>;
   if (!profile) return <div className="text-white/50 text-center mt-20">User not found.</div>;
 
@@ -196,6 +210,45 @@ export default function ProfileView() {
           </div>
           {/* Backdrop Click to Close */}
           <div className="absolute inset-0 -z-10" onClick={closeReelModal}></div>
+        </div>
+      )}
+
+      {/* --- FOLLOW LIST MODAL --- */}
+      {followModal.isOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="relative w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-zinc-800/50">
+              <h3 className="text-lg font-bold text-white">{followModal.title}</h3>
+              <button 
+                onClick={() => setFollowModal({ ...followModal, isOpen: false })}
+                className="p-1 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            <div className="max-h-[60vh] overflow-y-auto p-4 space-y-4 custom-scrollbar">
+              {followModal.users.length === 0 ? (
+                <p className="text-center py-8 text-zinc-500 text-sm">No one here yet.</p>
+              ) : (
+                followModal.users.map(u => (
+                  <div key={u.id} className="flex items-center gap-3">
+                    <img 
+                      src={u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "User")}&background=0D9488&color=fff`} 
+                      alt={u.name} 
+                      className="w-10 h-10 rounded-full object-cover border border-white/10"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold text-white truncate">{u.name}</h4>
+                      <p className="text-[10px] text-zinc-400 truncate">@{u.username}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          {/* Backdrop click to close */}
+          <div className="absolute inset-0 -z-10" onClick={() => setFollowModal({ ...followModal, isOpen: false })}></div>
         </div>
       )}
 
@@ -251,9 +304,20 @@ export default function ProfileView() {
             <span className="text-xs text-white/40 uppercase tracking-wider">Reels</span>
           </div>
           <div className="w-[1px] h-8 bg-white/10" />
-          <div className="text-center">
+          <div 
+            className="text-center cursor-pointer hover:bg-white/5 px-2 rounded-lg transition"
+            onClick={() => handleShowFollows("followers")}
+          >
             <span className="block font-bold text-xl text-white">{profile.followers || 0}</span>
             <span className="text-xs text-white/40 uppercase tracking-wider">Followers</span>
+          </div>
+          <div className="w-[1px] h-8 bg-white/10" />
+          <div 
+            className="text-center cursor-pointer hover:bg-white/5 px-2 rounded-lg transition"
+            onClick={() => handleShowFollows("following")}
+          >
+            <span className="block font-bold text-xl text-white">{profile.following || 0}</span>
+            <span className="text-xs text-white/40 uppercase tracking-wider">Following</span>
           </div>
         </div>
       </div>

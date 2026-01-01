@@ -97,6 +97,13 @@ export const profile = async (req, res) => {
           include: { reel: true },
           orderBy: { createdAt: "desc" },
         },
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            posts: true
+          }
+        },
         reelLikes: true, // Fetch likes to know what I liked
       },
     });
@@ -111,8 +118,8 @@ export const profile = async (req, res) => {
       username: user.username || user.email.split("@")[0],
       avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=0D9488&color=fff`,
       bio: user.bio || "",
-      followers: 128, // Still mocked until we have a Follow model
-      following: 42,  // Still mocked until we have a Follow model
+      followers: user._count.followers,
+      following: user._count.following,
     };
 
     res.json(fixBigInt(enhancedUser));

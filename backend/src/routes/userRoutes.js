@@ -4,30 +4,19 @@ import { PrismaClient } from "@prisma/client";
 const router = express.Router();
 const prisma = new PrismaClient();
 
+import { protect } from "../middlewares/authMiddleware.js";
+import { toggleFollow, getUserProfile, getFollowers, getFollowing } from "../controllers/userController.js";
+
 // GET /api/users/:id
-router.get("/:id", async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
+router.get("/:id", protect, getUserProfile);
 
-    // Find the user AND their posts
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        posts: {
-          orderBy: { createdAt: 'desc' } // Newest posts first
-        }
-      }
-    });
+// POST /api/users/:id/follow
+router.post("/:id/follow", protect, toggleFollow);
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+// GET /api/users/:id/followers
+router.get("/:id/followers", protect, getFollowers);
 
-    res.json(user);
-  } catch (err) {
-    console.error("Error fetching user:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+// GET /api/users/:id/following
+router.get("/:id/following", protect, getFollowing);
 
 export default router;

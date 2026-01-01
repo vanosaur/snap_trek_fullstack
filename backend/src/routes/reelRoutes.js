@@ -24,11 +24,12 @@ function fixBigInt(obj) {
 // ----------------------------
 // GET reels
 // ----------------------------
-router.get("/", async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
     const reels = await prisma.reel.findMany({
       orderBy: { id: "desc" },
       include: {
+        author: true,
         _count: {
           select: { likes: true }
         }
@@ -36,10 +37,28 @@ router.get("/", async (req, res) => {
     });
 
     // Flatten _count.likes to likes property
-    const reelsWithCounts = reels.map(reel => ({
-      ...reel,
-      likes: reel._count.likes,
-      // comments: reel._count.comments || 0 // (If comments existed)
+    const reelsWithCounts = await Promise.all(reels.map(async reel => {
+      let isFollowing = false;
+      if (req.user && reel.authorId) {
+        const follow = await prisma.follow.findUnique({
+          where: {
+            followerId_followingId: {
+              followerId: req.user.id,
+              followingId: reel.authorId
+            }
+          }
+        });
+        isFollowing = !!follow;
+      }
+
+      return {
+        ...reel,
+        likes: reel._count.likes,
+        author: {
+          ...reel.author,
+          isFollowing
+        }
+      };
     }));
 
     const fixed = fixBigInt(reelsWithCounts);

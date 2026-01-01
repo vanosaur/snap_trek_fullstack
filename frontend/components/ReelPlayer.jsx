@@ -35,6 +35,7 @@ const ReelItem = ({
   setIsFlippedGlobal,
   toggleLike,
   toggleSave,
+  toggleFollow,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -198,6 +199,30 @@ const ReelItem = ({
 
           {/* BOTTOM INFO */}
           <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 text-white z-20">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden bg-zinc-800">
+                <img 
+                  src={reel.author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(reel.author?.name || "User")}&background=0D9488&color=fff`} 
+                  alt={reel.author?.name || "User"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm">{reel.author?.name || "Anonymous"}</h4>
+                <p className="text-[10px] text-zinc-300">@{reel.author?.username || "user"}</p>
+              </div>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFollow(reel.author?.id);
+                }}
+                className={`ml-2 px-3 py-1 rounded-full border border-white/30 text-[10px] font-bold transition ${
+                  reel.author?.isFollowing ? 'bg-white text-black border-white' : 'hover:bg-white/10'
+                }`}
+              >
+                {reel.author?.isFollowing ? 'Following' : 'Follow'}
+              </button>
+            </div>
             <p className="text-sm opacity-90 line-clamp-2 mb-2">{reel.title}</p>
           </div>
         </div>
@@ -303,6 +328,54 @@ export default function ReelPlayer() {
     }
   };
 
+  /* FOLLOW HANDLER */
+  const handleFollow = async (authorId) => {
+    console.log("Attempting to follow authorId:", authorId);
+    if (!authorId) {
+      console.warn("Cannot follow: authorId is missing");
+      return;
+    }
+    // Update local state first for instant feedback
+    setReels((prev) =>
+      prev.map((r) => {
+        if (r.author?.id === authorId) {
+          // Toggle followed state for all reels by this author
+          const isFollowing = !!r.author?.isFollowing;
+          return {
+            ...r,
+            author: {
+              ...r.author,
+              isFollowing: !isFollowing
+            }
+          };
+        }
+        return r;
+      })
+    );
+
+    try {
+      const response = await api.post(`/users/${authorId}/follow`);
+      console.log("Follow API response:", response.data);
+    } catch (err) {
+      console.error("Follow failed", err.response?.data || err.message);
+      // Rollback on error
+      setReels((prev) =>
+        prev.map((r) => {
+          if (r.author?.id === authorId) {
+            return {
+              ...r,
+              author: {
+                ...r.author,
+                isFollowing: !r.author?.isFollowing
+              }
+            };
+          }
+          return r;
+        })
+      );
+    }
+  };
+
   /* Intersection */
   useEffect(() => {
     if (!reels.length) return;
@@ -369,6 +442,7 @@ export default function ReelPlayer() {
               setIsFlippedGlobal={setIsFlippedGlobal}
               toggleLike={handleLike}
               toggleSave={handleSave}
+              toggleFollow={handleFollow}
             />
           </div>
         ))}
