@@ -66,16 +66,19 @@ export default function ItineraryCard({ reel, onClose, isMobile }) {
 
       // Create Booking API
       await api.post("/bookings", {
+      const response = await api.post("/bookings", {
         reelId: reel.id,
         guests,
         bookingDate: date,
         totalPrice,
       });
 
+      console.log("Booking API response:", response.data); // Added for debugging, similar to user's example
       setView("success");
     } catch (err) {
-      console.error("Booking failed:", err);
-      setBookingError("Payment failed. Please try again.");
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message;
+      console.error("Booking failed:", msg); // Added for debugging, similar to user's example
+      setBookingError(`Booking failed: ${msg}`);
     } finally {
       setLoading(false);
     }

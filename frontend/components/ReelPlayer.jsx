@@ -306,7 +306,9 @@ export default function ReelPlayer() {
     try {
       await api.post(`/reels/${reelId}/like`);
     } catch (err) {
-      console.error("Like failed", err);
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message;
+      console.error("Like failed:", msg);
+      // Optional: Rollback state on error
     }
   };
 
@@ -324,7 +326,18 @@ export default function ReelPlayer() {
     try {
       await api.post(`/reels/${reelId}/save`);
     } catch (err) {
-      console.error("Save failed", err);
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message;
+      console.error("Save failed:", msg);
+      // Rollback state on error
+      setReels((prev) =>
+        prev.map((r) => {
+          if (String(r.id) === String(reelId)) {
+            return { ...r, saved: !r.saved };
+          }
+          return r;
+        })
+      );
+      alert(`Save failed: ${msg}`);
     }
   };
 

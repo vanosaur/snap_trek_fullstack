@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 
 // Toggle follow/unfollow
 export const toggleFollow = async (req, res) => {
+  console.log(`POST /api/users/${req.params.id}/follow - User:`, req.user.id);
   try {
     const followerId = req.user.id;
     const followingId = parseInt(req.params.id);

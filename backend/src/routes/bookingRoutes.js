@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 // CREATE BOOKING
 // ----------------------------
 router.post("/", protect, async (req, res) => {
+  console.log("POST /api/bookings - Body:", req.body);
   try {
     const { reelId, guests, bookingDate, totalPrice } = req.body;
 
