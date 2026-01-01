@@ -148,7 +148,7 @@ export default function ProfileView() {
 
     try {
       await api.delete(`/bookings/${bookingId}`);
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId.toString()));
+      setBookings((prev) => prev.filter((b) => String(b.id) !== String(bookingId)));
     } catch (err) {
       console.error("Delete booking failed:", err);
       alert("Could not delete booking.");

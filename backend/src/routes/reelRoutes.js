@@ -21,24 +21,54 @@ router.get("/", protect, async (req, res) => {
       }
     });
 
-    // Flatten _count.likes to likes property
+    // Flatten _count.likes to likes property and add isLiked/isSaved status
     const reelsWithCounts = await Promise.all(reels.map(async reel => {
       let isFollowing = false;
-      if (req.user && reel.authorId) {
-        const follow = await prisma.follow.findUnique({
+      let isLiked = false;
+      let isSaved = false;
+
+      if (req.user) {
+        // Check if user follows the author
+        if (reel.authorId) {
+          const follow = await prisma.follow.findUnique({
+            where: {
+              followerId_followingId: {
+                followerId: req.user.id,
+                followingId: reel.authorId
+              }
+            }
+          });
+          isFollowing = !!follow;
+        }
+
+        // Check if user liked this reel
+        const like = await prisma.reelLike.findUnique({
           where: {
-            followerId_followingId: {
-              followerId: req.user.id,
-              followingId: reel.authorId
+            userId_reelId: {
+              userId: req.user.id,
+              reelId: reel.id
             }
           }
         });
-        isFollowing = !!follow;
+        isLiked = !!like;
+
+        // Check if user saved this reel
+        const saved = await prisma.savedReel.findUnique({
+          where: {
+            userId_reelId: {
+              userId: req.user.id,
+              reelId: reel.id
+            }
+          }
+        });
+        isSaved = !!saved;
       }
 
       return {
         ...reel,
         likes: reel._count.likes,
+        liked: isLiked,
+        saved: isSaved,
         author: {
           ...reel.author,
           isFollowing
