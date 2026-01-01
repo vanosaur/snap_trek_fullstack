@@ -1,36 +1,61 @@
 import express from "express";
 import cors from "cors";
+
+// Import all routes
 import authRoutes from "./routes/authRoutes.js";
-import postRoutes from "./routes/postRoutes.js";
 import reelRoutes from "./routes/reelRoutes.js";
+import postUploadRoutes from "./routes/postUploadRoutes.js";
+import postFeedRoutes from "./routes/postFeedRoutes.js";
 import storyRoutes from "./routes/storyRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 
 const app = express();
 
+// ✅ Production-ready CORS
+const allowedOrigins = [
+  "https://snap-trek-fullstack.vercel.app",
+  "http://localhost:3000"
+];
 
-// ✅ Enable CORS
-app.use(
-  cors({
-    origin: ["http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      console.warn("CORS blocked origin:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// ✅ Routes
+// ✅ Consolidated Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/posts", postRoutes);
 app.use("/api/reels", reelRoutes);
+app.use("/api/post-upload", postUploadRoutes);
+app.use("/api/postfeed", postFeedRoutes);
 app.use("/api/stories", storyRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/bookings", bookingRoutes);
 app.use("/api/chat", chatRoutes);
 
-
-// ✅ Test route
+// ✅ Diagnostic Route
 app.get("/", (req, res) => {
-  res.send("✅ Backend running successfully on port 4000 (CORS active)");
+  res.json({
+    message: "🚀 SnapTrek Backend Active",
+    status: "READY",
+    database: process.env.DATABASE_URL ? "CONFIGURED" : "MISSING",
+    environment: process.env.NODE_ENV || "development"
+  });
 });
 
 export default app;

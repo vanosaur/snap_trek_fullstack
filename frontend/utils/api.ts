@@ -9,6 +9,9 @@ const getBaseURL = () => {
   return url.endsWith("/api") ? url : `${url}/api`;
 };
 
+const calculatedBaseURL = getBaseURL();
+console.log("🛠️ API Base URL initialized:", calculatedBaseURL);
+
 const api = axios.create({
   baseURL: getBaseURL(),
 });
