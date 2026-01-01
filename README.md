@@ -1,136 +1,126 @@
-# 📸 Snap-Trek - A Photo Travel Journal Web App
+📸 Snap-Trek — Travel Planning & Social Journey Platform
 
-vercel - https://snap-trek-fullstack.vercel.app/
-render - https://snap-trek-fullstack.onrender.com
+Vercel: https://snap-trek-fullstack.vercel.app/
 
-> **Capture, Organize, and Map Your Adventures.**
+Render: https://snap-trek-fullstack.onrender.com
 
-**Snap-Trek** is a unified platform designed to solve the problem of scattered travel memories. It allows travelers to upload photos, tag locations, add captions, and view their journeys visually on an interactive map—turning static photos into a dynamic digital journal.
+Plan trips. Book experiences. Share your travel stories.
+Snap-Trek is a unified travel platform where users can discover curated itineraries, book trips, and also share their travel memories with the world through a social feed — bringing travel planning and social exploration into one place.
 
----
+📖 Problem Statement
 
-## 📖 Problem Statement
-In today's world, travelers capture hundreds of photos but lack a unified space to record and organize them. [cite_start]Managing memories across multiple devices and apps is often messy and unorganized[cite: 5, 6].
+Travelers struggle with using multiple platforms — one for booking, one for itineraries, and another for sharing memories. This makes planning and documenting journeys fragmented and messy.
 
-## 💡 Solution
-Snap-Trek provides a simple, elegant platform to:
-* **Upload** travel photos with captions.
-* **Tag** specific locations.
-* **View** adventures visually on an interactive map.
-* [cite_start]**Search & Filter** memories for easy access[cite: 7, 8].
+💡 Solution
 
----
+Snap-Trek creates one connected travel ecosystem where users can:
 
-## ✨ Key Features
+🧭 Explore curated itineraries
 
-### 🔐 Authentication & Security
-* [cite_start]Secure **Signup, Login, and Logout** functionality[cite: 50].
-* [cite_start]Powered by **Supabase Auth** (Email/Password & OAuth)[cite: 26].
+🏨 Book trips and experiences
 
-### 🌍 Interactive Mapping
-* [cite_start]Tag locations on photos and display them on an **interactive world map**[cite: 55].
+📸 Share travel posts & memories
 
-### 📝 Comprehensive CRUD Operations
-* [cite_start]**Create:** Upload new travel posts with photos, captions, and locations[cite: 51].
-* **Read:** View all travel posts in a Feed or Profile view.
-* **Update:** Edit existing posts (caption, photo, or location).
-* [cite_start]**Delete:** Remove posts you no longer want to keep[cite: 65].
+👥 Follow other travelers
 
-### ⚡ Dynamic & Real-Time
-* [cite_start]**Real-time Updates:** Feeds and maps update instantly as new posts are added using Supabase real-time subscriptions[cite: 73].
-* [cite_start]**Dynamic Fetching:** Profile and Map pages fetch user data dynamically without page reloads[cite: 36].
+⭐ Save favorite itineraries & posts
 
-### 🔍 Search, Sort & Filter
-* [cite_start]**Search:** Find posts by destination name, caption, or tag[cite: 67].
-* [cite_start]**Sort:** Order posts by upload date or alphabetically[cite: 68].
-* [cite_start]**Filter:** Filter posts by specific locations or users[cite: 69].
-* [cite_start]**Pagination:** Server-side pagination for efficient handling of large datasets[cite: 71].
+Everything — planning to sharing — in one place.
 
----
+✨ Key Features
+🔐 Authentication
 
-## 🛠️ Tech Stack
+Secure Login / Signup
 
-### **Frontend**
-* [cite_start]**Framework:** React.js + Vite [cite: 19]
-* [cite_start]**Language:** TypeScript [cite: 19]
-* [cite_start]**Routing:** React Router [cite: 20]
-* [cite_start]**Styling:** Tailwind CSS + shadcn-ui [cite: 20]
-* [cite_start]**Hosting:** Vercel [cite: 28]
+Protected user routes
 
-### **Backend & Database**
-* [cite_start]**Backend API:** Supabase (REST APIs) [cite: 21]
-* [cite_start]**Database:** PostgreSQL (Managed by Supabase) [cite: 25]
-* [cite_start]**Storage:** Supabase Storage (for photo uploads) [cite: 15]
-* [cite_start]**Hosting:** Supabase Cloud [cite: 30]
+🧭 Travel Itinerary & Booking
 
----
+Browse curated itineraries
 
-## 🏗️ System Architecture
+View detailed trip plans
 
-The application follows a modular architecture:
-1.  [cite_start]**Frontend:** Built with React + Vite for high performance, utilizing `shadcn-ui` for a clean, minimal interface[cite: 18, 34].
-2.  [cite_start]**Backend:** Relies on Supabase services for Authentication, Database, and Storage[cite: 21].
-3.  [cite_start]**Data Flow:** The frontend communicates directly with the PostgreSQL database via Supabase REST APIs[cite: 65].
+Booking support for travel plans
 
----
+Save itineraries for later
 
-## 📡 API Overview
+📸 Social Travel Feed
 
-| Endpoint | Method | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `/api/auth/signup` | `POST` | Register a new user | Public |
-| `/api/auth/login` | `POST` | Authenticate user | Public |
-| `/api/posts` | `GET` | Retrieve all posts (with pagination/filter) | Authenticated |
-| `/api/posts/:id` | `GET` | Retrieve a specific post by ID | Authenticated |
-| `/api/posts` | `POST` | Create a new post (photo + caption + location) | Authenticated |
-| `/api/posts/:id` | `PUT` | Update an existing post | Authenticated |
-| `/api/posts/:id` | `DELETE` | Delete a post | Admin/Owner |
-| `/api/search` | `GET` | Search posts by location, caption, or tag | Authenticated |
+Upload travel photos with captions
 
-[cite_start]*[cite: 62]*
+Like posts
 
----
+Comment on posts
 
-## 🚀 Getting Started
+Explore global travel journeys
 
-### Prerequisites
-* Node.js (v16+)
-* npm or yarn
-* A Supabase account
+👥 Community & Engagement
 
-### Installation
+Follow / Unfollow travelers
 
-1.  **Clone the repository**
-    ```bash
-    git clone [https://github.com/your-username/snap-trek.git](https://github.com/your-username/snap-trek.git)
-    cd snap-trek
-    ```
+View user profiles
 
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
+Build your travel network
 
-3.  **Configure Environment Variables**
-    Create a `.env` file in the root directory and add your Supabase credentials:
-    ```env
-    VITE_SUPABASE_URL=your_supabase_url
-    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-    ```
+⭐ Favorites
 
-4.  **Run the development server**
-    ```bash
-    npm run dev
-    ```
+Save itineraries you love
 
----
+Save posts for later viewing
 
-## 🔮 Future Improvements
-* Social sharing features (Share to Instagram/Facebook).
-* Travel itinerary planner.
-* Offline support (PWA).
+🛠️ Tech Stack
+Frontend
 
----
+Next.js / React
 
-**License**
-This project is licensed under the MIT License.
+Tailwind CSS (or your styling library)
+
+Backend
+
+Node.js
+
+Express
+
+MongoDB / Prisma / Supabase (update based on yours)
+
+Deployment
+
+Frontend: Vercel
+
+Backend: Render
+
+🧑‍💻 Getting Started
+Prerequisites
+
+Node.js
+
+npm / yarn
+
+Database credentials configured
+
+Install & Run
+Clone Repository
+git clone <your-repo-url>
+cd snap-trek
+
+Install Dependencies
+npm install
+
+Configure Environment Variables
+
+Create .env.local and add:
+
+DATABASE_URI=
+JWT_SECRET=
+NEXT_PUBLIC_BASE_URL=
+
+Run Development
+npm run dev
+
+
+Runs at:
+
+http://localhost:3000
+💙 Inspiration
+
+Inspired by modern travel platforms + social sharing experiences.
