@@ -5,7 +5,7 @@ import { useChat } from "../hooks/useChat";
 import { Send, Search, Phone, Video, MoreVertical, ArrowLeft, Smile, Paperclip } from "lucide-react";
 
 export default function ChatInterface() {
-  const { chats, activeChat, activeChatId, setActiveChatId, sendMessage, isTyping, markAsRead } = useChat();
+  const { chats, activeChat, activeChatId, setActiveChatId, sendMessage, isTyping, markAsRead, loading } = useChat();
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -13,6 +13,14 @@ export default function ChatInterface() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChat?.messages, isTyping]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[85vh] w-full items-center justify-center glass-panel rounded-3xl">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+      </div>
+    );
+  }
 
   const handleSend = () => {
     if (inputText.trim()) {

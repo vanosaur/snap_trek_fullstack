@@ -1,18 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #000000;
   --foreground: #ffffff;
+  --neon-teal: #2dd4bf;
+  --neon-blue: #3b82f6;
+  --neon-purple: #a855f7;
+  --neon-pink: #ec4899;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Outfit', sans-serif;
 
-  /* Custom Animations */
-  --animate-blob: blob 7s infinite;
+  /* Custom Colors */
+  --color-neon-teal: var(--neon-teal);
+  --color-neon-blue: var(--neon-blue);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-pink: var(--neon-pink);
+
+  /* Animations */
+  --animate-blob: blob 10s infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
 
   @keyframes blob {
     0% {
@@ -31,49 +43,122 @@
       transform: translate(0px, 0px) scale(1);
     }
   }
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 10px -5px var(--neon-blue);
+    }
+
+    to {
+      box-shadow: 0 0 20px 5px var(--neon-purple);
+    }
   }
 }
 
 body {
-  background: var(--background);
+  background: #020202;
+  /* Ultra Dark */
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  /* Deep Blue/Black Gradient Background Hint */
+  background-image:
+    radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.05), transparent 25%);
+  background-attachment: fixed;
 }
 
-/* Premium Glassmorphism Utilities */
+/* --- 3D FLIP UTILITIES (Restored) --- */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* --- PREMIUM UTILITIES --- */
+
+/* 1. The Ultimate Glass Panel */
 .glass-panel {
-  @apply bg-zinc-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  @apply bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
+/* 2. Glass Card (Lighter, for feeds) */
+.glass-card {
+  @apply bg-[#0A0A0A]/80 backdrop-blur-md border border-white/5 rounded-3xl transition-all duration-300;
+}
+
+.glass-card:hover {
+  @apply border-white/10 shadow-lg shadow-teal-500/5 bg-[#0F0F0F]/90;
+}
+
+/* 3. Neon Gradient Text */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-blue-500 to-purple-600;
+}
+
+/* 4. Inputs */
 .glass-input {
-  @apply bg-black/20 border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300;
+  @apply bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all placeholder:text-white/20;
 }
 
-.glass-button {
-  @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 transition-all duration-300 active:scale-[0.98];
+/* 5. Buttons */
+.btn-primary {
+  @apply bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300;
 }
 
+.btn-secondary {
+  @apply bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-6 rounded-xl border border-white/5 transition-all duration-300;
+}
 
-@layer utilities {
-  .perspective-1000 {
-    perspective: 1000px;
-  }
+/* 6. Scrollbar Hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-  .transform-style-3d {
-    transform-style: preserve-3d;
-  }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
 
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

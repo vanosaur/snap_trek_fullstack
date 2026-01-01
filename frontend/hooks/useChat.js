@@ -1,117 +1,129 @@
-import { useState, useEffect, useCallback } from 'react';
-
-const INITIAL_CHATS = [
-  {
-    id: 1,
-    name: "Alex Wanderer",
-    username: "@alex_travels",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop",
-    lastMessage: "That view looks incredible! 🏔️",
-    timestamp: "2m ago",
-    unread: 2,
-    isOnline: true,
-    messages: [
-      { id: 1, text: "Hey! Saw your latest reel.", sender: "them", time: "10:30 AM" },
-      { id: 2, text: "That view looks incredible! 🏔️", sender: "them", time: "10:32 AM" }
-    ]
-  },
-  {
-    id: 2,
-    name: "Sarah Hikes",
-    username: "@sarah_hikes",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
-    lastMessage: "When are you visiting Bali?",
-    timestamp: "1h ago",
-    unread: 0,
-    isOnline: false,
-    messages: [
-        { id: 1, text: "When are you visiting Bali?", sender: "them", time: "9:15 AM" }
-    ]
-  },
-  {
-    id: 3,
-    name: "Mike Lens",
-    username: "@mike_lens",
-    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop",
-    lastMessage: "Thanks for the tips!",
-    timestamp: "3h ago",
-    unread: 0,
-    isOnline: true,
-    messages: [
-        { id: 1, text: "Thanks for the tips!", sender: "them", time: "Yesterday" }
-    ]
-  }
-];
+import { useState, useEffect, useCallback, useRef } from 'react';
+import api from '../utils/api';
 
 export function useChat() {
-  const [chats, setChats] = useState(INITIAL_CHATS);
+  const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  const pollingInterval = useRef(null);
 
-  const activeChat = chats.find(c => c.id === activeChatId);
+  // 1. Fetch current user profile to identify "me"
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await api.get("/auth/profile");
+        setCurrentUser(res.data);
+      } catch (err) {
+        console.error("Chat Profile Error:", err);
+      }
+    }
+    fetchProfile();
+  }, []);
 
-  const sendMessage = useCallback((text) => {
+  // 2. Fetch conversations
+  const fetchConversations = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const res = await api.get("/chat/conversations");
+      
+      const transformedChats = res.data.map(conv => {
+        const otherParticipant = conv.participants.find(p => p.id !== currentUser.id);
+        const lastMsg = conv.messages[0];
+        
+        return {
+          id: conv.id,
+          name: otherParticipant?.name || "User " + otherParticipant?.id,
+          username: "@" + (otherParticipant?.username || "user"),
+          avatar: otherParticipant?.avatar,
+          lastMessage: lastMsg?.text || "Started a conversation",
+          timestamp: lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
+          unread: 0, // Simplified for now
+          isOnline: true, // Simplified
+        };
+      });
+      
+      setChats(transformedChats);
+      setLoading(false);
+    } catch (err) {
+      console.error("Fetch Conversations Error:", err);
+    }
+  }, [currentUser]);
+
+  // 3. Fetch messages for active chat
+  const fetchMessages = useCallback(async () => {
+    if (!activeChatId) return;
+    try {
+      const res = await api.get(`/chat/messages/${activeChatId}`);
+      const transformedMessages = res.data.map(msg => ({
+        id: msg.id,
+        text: msg.text,
+        sender: msg.senderId === currentUser?.id ? "me" : "them",
+        time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+      setMessages(transformedMessages);
+    } catch (err) {
+      console.error("Fetch Messages Error:", err);
+    }
+  }, [activeChatId, currentUser]);
+
+  // Initial Load + Polling
+  useEffect(() => {
+    if (currentUser) {
+      fetchConversations();
+      
+      pollingInterval.current = setInterval(() => {
+        fetchConversations();
+        if (activeChatId) fetchMessages();
+      }, 3000); 
+    }
+    
+    return () => clearInterval(pollingInterval.current);
+  }, [currentUser, fetchConversations, activeChatId, fetchMessages]);
+
+  // Message Sending
+  const sendMessage = useCallback(async (text) => {
     if (!activeChatId || !text.trim()) return;
 
-    const newMessage = {
-      id: Date.now(),
-      text,
-      sender: "me",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+    try {
+      const res = await api.post("/chat/messages", {
+        text,
+        conversationId: activeChatId
+      });
 
-    // Update UI immediately
-    setChats(prev => prev.map(chat => {
-      if (chat.id === activeChatId) {
-        return {
-          ...chat,
-          messages: [...chat.messages, newMessage],
-          lastMessage: text,
-          timestamp: "Just now"
-        };
-      }
-      return chat;
-    }));
+      const newMessage = {
+        id: res.data.id,
+        text: res.data.text,
+        sender: "me",
+        time: "Just now"
+      };
 
-    // Simulate Reply
-    setTimeout(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-            const replyMessage = {
-                id: Date.now() + 1,
-                text: "That sounds awesome! Let's plan something soon. 🔥",
-                sender: "them",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
+      setMessages(prev => [...prev, newMessage]);
+      fetchConversations(); // Update sidebar immediately
+    } catch (err) {
+      console.error("Send Message Error:", err);
+    }
+  }, [activeChatId, fetchConversations]);
 
-            setChats(prev => prev.map(chat => {
-                if (chat.id === activeChatId) {
-                    return {
-                        ...chat,
-                        messages: [...chat.messages, replyMessage],
-                        lastMessage: replyMessage.text,
-                        timestamp: "Just now"
-                    };
-                }
-                return chat;
-            }));
-            setIsTyping(false);
-        }, 2000); // Typing duration
-    }, 1000); // Delay before typing starts
-
-  }, [activeChatId]);
-
-  const markAsRead = (chatId) => {
-      setChats(prev => prev.map(c => c.id === chatId ? { ...c, unread: 0 } : c));
+  const activeChat = chats.find(c => c.id === activeChatId) || {};
+  // Overlay current active messages onto activeChat object for ChatInterface compatibility
+  const activeChatWithMessages = {
+      ...activeChat,
+      messages: messages
   };
 
   return {
     chats,
-    activeChat,
+    activeChat: activeChatWithMessages,
     activeChatId,
     setActiveChatId,
     sendMessage,
     isTyping,
-    markAsRead
+    loading,
+    markAsRead: () => {} // Simplified for now
   };
 }
+

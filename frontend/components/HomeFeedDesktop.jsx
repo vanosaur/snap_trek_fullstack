@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import StoriesBar from "./StoriesBar";
 import PostCardDesktop from "./PostCardDesktop";
 import UploadPost from "./UploadPost"; // Ensure this import matches the new file location
-import { Plus, Camera, X } from "lucide-react"; // Added X for close button
+import { Plus, Camera, X } from "lucide-react"; 
 import api from "../utils/api";
+import Logo from "./Logo";
 
 // --- Dummy Data ---
 const DUMMY_POSTS = [
@@ -74,14 +75,12 @@ export default function HomeFeedDesktop({ onCreateClick }) {
   return (
     <main className="w-full h-full overflow-y-auto no-scrollbar relative">
 
-      {/* Mobile sticky header */}
-      <div className="md:hidden sticky top-0 z-30 glass-panel border-b border-white/5 rounded-none">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-teal-500/20">
-              <Camera className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">
+      {/* Mobile sticky header (Glass + Neon) */}
+      <div className="md:hidden sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Logo className="w-9 h-9" mobile />
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 tracking-tight">
               SnapTrek
             </h1>
           </div>
@@ -95,7 +94,7 @@ export default function HomeFeedDesktop({ onCreateClick }) {
         </div>
       </div>
 
-      <div className="px-4 pt-6 pb-24 md:pb-10">
+      <div className="px-4 md:px-8 pt-6 pb-24 md:pb-10 max-w-2xl mx-auto">
 
         {/* Stories Section (Unified for Mobile & Desktop) */}
         <div className="mb-8">

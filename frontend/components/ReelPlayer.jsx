@@ -13,10 +13,12 @@ import {
   ChevronUp,
   ChevronDown,
   Music,
+  Bookmark,
 } from "lucide-react";
 
 import BottomNav from "./BottomNav";
 import ItineraryCard from "./ItineraryCard";
+import api from "../utils/api";
 
 const CTA_HEIGHT = 72;
 const BOTTOM_NAV_HEIGHT = 64;
@@ -31,6 +33,8 @@ const ReelItem = ({
   toggleMute,
   isMobile,
   setIsFlippedGlobal,
+  toggleLike,
+  toggleSave,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -124,17 +128,45 @@ const ReelItem = ({
             </div>
           )}
 
-          {/* SIDE CONTROLS */}
+            {/* SIDE CONTROLS */}
           <div className="absolute right-2 md:right-4 bottom-24 md:bottom-24 flex flex-col gap-5 items-center z-30">
+            {/* LIKE */}
             <div className="flex flex-col items-center gap-1">
-              <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
-                <Heart size={24} className="text-white" />
-              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLike(reel.id);
+                }}
+                className="p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition"
+              >
+                <Heart
+                  size={24}
+                  className={reel.liked ? "text-red-500 fill-red-500" : "text-white"}
+                />
+              </button>
               <span className="text-xs font-bold text-white">
-                {reel.likes || "0"}
+                {reel.likes || 0}
               </span>
             </div>
 
+            {/* SAVE */}
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSave(reel.id);
+                }}
+                className="p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition"
+              >
+                <Bookmark
+                  size={24}
+                  className={reel.saved ? "text-teal-400 fill-teal-400" : "text-white"}
+                />
+              </button>
+              <span className="text-xs font-bold text-white">Save</span>
+            </div>
+
+            {/* COMMENTS */}
             <div className="flex flex-col items-center gap-1">
               <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
                 <MessageCircle size={24} className="text-white" />
@@ -144,6 +176,7 @@ const ReelItem = ({
               </span>
             </div>
 
+            {/* SHARE */}
             <div className="flex flex-col items-center gap-1">
               <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
                 <Share2 size={24} className="text-white" />
@@ -151,6 +184,7 @@ const ReelItem = ({
               <span className="text-xs font-bold text-white">Share</span>
             </div>
 
+            {/* ITINERARY */}
             <div className="flex flex-col items-center gap-1 mt-2">
               <button
                 onClick={handleOpenItinerary}
@@ -215,13 +249,11 @@ export default function ReelPlayer() {
   useEffect(() => {
     async function fetchReels() {
       try {
-        const res = await fetch(
-          "https://snap-trek-fullstack.onrender.com/api/reels"
-        );
-        const data = await res.json();
+        const res = await api.get("/reels");
+        const data = res.data; 
         setReels(data);
 
-        if (data.length > 0) setActiveReelId(data[0].id);
+        if (data.length > 0) setActiveReelId(String(data[0].id));
       } catch (err) {
         console.error("Failed to load reels:", err);
       }
@@ -229,6 +261,47 @@ export default function ReelPlayer() {
 
     fetchReels();
   }, []);
+
+  /* LIKE HANDLER */
+  const handleLike = async (reelId) => {
+    setReels((prev) =>
+      prev.map((r) => {
+        if (String(r.id) === String(reelId)) {
+          const isLiked = !!r.liked;
+          return {
+            ...r,
+            liked: !isLiked,
+            likes: isLiked ? (r.likes || 0) - 1 : (r.likes || 0) + 1,
+          };
+        }
+        return r;
+      })
+    );
+
+    try {
+      await api.post(`/reels/${reelId}/like`);
+    } catch (err) {
+      console.error("Like failed", err);
+    }
+  };
+
+  /* SAVE HANDLER */
+  const handleSave = async (reelId) => {
+    setReels((prev) =>
+      prev.map((r) => {
+        if (String(r.id) === String(reelId)) {
+          return { ...r, saved: !r.saved };
+        }
+        return r;
+      })
+    );
+
+    try {
+      await api.post(`/reels/${reelId}/save`);
+    } catch (err) {
+      console.error("Save failed", err);
+    }
+  };
 
   /* Intersection */
   useEffect(() => {
@@ -239,7 +312,7 @@ export default function ReelPlayer() {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting)
-          setActiveReelId(Number(entry.target.dataset.id));
+          setActiveReelId(entry.target.dataset.id);
       });
     }, options);
 
@@ -253,14 +326,14 @@ export default function ReelPlayer() {
   const scrollToReel = (direction) => {
     if (!containerRef.current) return;
 
-    const currentIndex = reels.findIndex((r) => r.id === activeReelId);
+    const currentIndex = reels.findIndex((r) => String(r.id) === activeReelId);
     let nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
 
     if (nextIndex >= 0 && nextIndex < reels.length) {
-      const nextReel = document.querySelector(
-        `[data-id="${reels[nextIndex].id}"]`
-      );
-      nextReel?.scrollIntoView({ behavior: "smooth" });
+      containerRef.current.scrollTo({
+        top: nextIndex * containerRef.current.clientHeight,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -277,7 +350,7 @@ export default function ReelPlayer() {
     <div className="bg-black w-full h-[100dvh] flex items-center justify-center relative">
       <div
         ref={containerRef}
-        className={`w-full md:w-[450px] h-[100dvh] bg-black snap-y snap-mandatory scrollbar-hide ${
+        className={`w-full md:w-[450px] h-[100dvh] bg-black snap-y snap-mandatory no-scrollbar ${
           isFlippedGlobal ? "overflow-hidden" : "overflow-y-scroll"
         }`}
       >
@@ -289,11 +362,13 @@ export default function ReelPlayer() {
           >
             <ReelItem
               reel={reel}
-              isActive={activeReelId === reel.id}
+              isActive={activeReelId === String(reel.id)}
               isMuted={isMuted}
               toggleMute={() => setIsMuted(!isMuted)}
               isMobile={isMobile}
               setIsFlippedGlobal={setIsFlippedGlobal}
+              toggleLike={handleLike}
+              toggleSave={handleSave}
             />
           </div>
         ))}

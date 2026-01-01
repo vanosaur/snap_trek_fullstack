@@ -19,6 +19,11 @@ model User {
   posts     Post[]
   stories   Story[]
   reels     Reel[]
+  reelLikes ReelLike[]
+  savedReels SavedReel[]
+  bookings  Booking[]
+  conversations Conversation[]
+  messages      Message[]
 }
 
 model Post {
@@ -49,10 +54,50 @@ model Reel {
 
   authorId       Int?
   author         User?     @relation(fields: [authorId], references: [id])
+  likes          ReelLike[]
+  savedBy        SavedReel[]
+  bookings       Booking[]
 
   @@map("reels")
 }
 
+model ReelLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  reelId    BigInt
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reelId])
+}
+
+model SavedReel {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  reelId    BigInt
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reelId])
+}
+
+model Booking {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  reelId       BigInt
+  bookingDate  DateTime
+  guests       Int
+  totalPrice   Float
+  status       String   @default("CONFIRMED") // CONFIRMED, CANCELLED
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+}
 
 model Story {
   id        Int      @id @default(autoincrement())
@@ -61,4 +106,22 @@ model Story {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Conversation {
+  id            Int       @id @default(autoincrement())
+  participants  User[]
+  messages      Message[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  text           String
+  senderId       Int
+  sender         User         @relation(fields: [senderId], references: [id])
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
 }

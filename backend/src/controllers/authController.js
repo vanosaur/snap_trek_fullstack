@@ -66,6 +66,22 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+// Helper to handle BigInt serialization
+function fixBigInt(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(fixBigInt);
+  }
+  if (obj !== null && typeof obj === "object") {
+    const fixed = {};
+    for (let key in obj) {
+      const value = obj[key];
+      fixed[key] = typeof value === "bigint" ? value.toString() : fixBigInt(value);
+    }
+    return fixed;
+  }
+  return obj;
+}
+
 export const profile = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -74,6 +90,14 @@ export const profile = async (req, res) => {
         posts: {
           orderBy: { createdAt: "desc" },
         },
+        reels: {
+          orderBy: { id: "desc" },
+        },
+        savedReels: {
+          include: { reel: true },
+          orderBy: { createdAt: "desc" },
+        },
+        reelLikes: true, // Fetch likes to know what I liked
       },
     });
 
@@ -91,7 +115,7 @@ export const profile = async (req, res) => {
       following: 42,  // Still mocked until we have a Follow model
     };
 
-    res.json(enhancedUser);
+    res.json(fixBigInt(enhancedUser));
   } catch (err) {
     console.error("Profile Error:", err);
     res.status(500).json({ message: "Server error" });

@@ -1,22 +1,69 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, User, MapPin, Grid, Briefcase } from "lucide-react";
+import { Trash2, User, Grid, Film, Play, Bookmark, Ticket, Calendar as CalIcon } from "lucide-react";
 import EditProfileModal from "./EditProfileModal";
 
 import api from "../utils/api"; 
+
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
+
+const MediaPreview = ({ image, video, alt, className }) => {
+  const [imgError, setImgError] = useState(false);
+
+  if (!imgError && image) {
+    return (
+      <img 
+        src={image} 
+        alt={alt} 
+        onError={() => setImgError(true)}
+        className={className}
+      />
+    );
+  }
+
+  // Fallback to video (showing first frame)
+  if (video) {
+    return (
+      <video
+        src={video + "#t=0.1"}
+        className={className}
+        muted
+        playsInline
+        preload="metadata"
+        onMouseOver={e => e.target.play()}
+        onMouseOut={(e) => {
+          e.target.pause();
+          e.target.currentTime = 0;
+        }}
+      />
+    );
+  }
+
+  // Fallback to generic image if no video
+  return (
+    <img 
+      src={FALLBACK_IMAGE} 
+      alt={alt} 
+      className={className}
+    />
+  );
+};
 
 export default function ProfileView() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts"); // "posts", "reels", "saved", "bookings"
+  
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
 
   // 1. Fetch Profile Data
   useEffect(() => {
     async function fetchProfile() {
       try {
         const res = await api.get("/auth/profile");
-        // api.get returns the response object, so res.data is the payload
         setProfile(res.data);
       } catch (err) {
         console.error("Error loading profile:", err);
@@ -27,23 +74,76 @@ export default function ProfileView() {
     fetchProfile();
   }, []);
 
+  // 1b. Fetch Bookings when tab active
+  useEffect(() => {
+    if (activeTab === "bookings" && bookings.length === 0) {
+      async function fetchBookings() {
+        setBookingsLoading(true);
+        try {
+          const res = await api.get("/bookings");
+          setBookings(res.data);
+        } catch (err) {
+          console.error("Error loading bookings:", err);
+        } finally {
+          setBookingsLoading(false);
+        }
+      }
+      fetchBookings();
+    }
+  }, [activeTab]);
+
   // 2. Handle Post Deletion
   async function handleDelete(postId) {
     if (!confirm("Are you sure you want to delete this post?")) return;
 
     try {
       await api.delete(`/posts/${postId}`);
-
-      // Remove the deleted post from the screen immediately
       setProfile((prev) => ({
         ...prev,
         posts: prev.posts.filter((p) => p.id !== postId),
       }));
-
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Could not delete post.");
     }
+  }
+
+  // 3. Handle Reel Deletion
+  async function handleDeleteReel(reelId) {
+    if (!confirm("Are you sure you want to delete this reel?")) return;
+
+    try {
+      await api.delete(`/reels/${reelId}`);
+      setProfile((prev) => ({
+        ...prev,
+        reels: prev.reels.filter((r) => r.id !== reelId.toString()),
+      }));
+    } catch (err) {
+      console.error("Delete reel failed:", err);
+      alert("Could not delete reel.");
+    }
+  }
+
+  // 4. Handle Reel Selection
+  const [selectedReel, setSelectedReel] = useState(null);
+
+  function handleReelClick(reel) {
+    setSelectedReel(reel);
+  }
+
+  function closeReelModal() {
+    setSelectedReel(null);
+  }
+
+  // 5. Handle Post Selection
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  function handlePostClick(post) {
+    setSelectedPost(post);
+  }
+
+  function closePostModal() {
+    setSelectedPost(null);
   }
 
   if (loading) return <div className="text-white/50 text-center mt-20">Loading profile...</div>;
@@ -52,6 +152,53 @@ export default function ProfileView() {
   return (
     <div className="w-full h-full pb-20">
       
+      {/* --- POST IMAGE MODAL --- */}
+      {selectedPost && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center">
+            <img
+              src={selectedPost.imageUrl}
+              alt="Post"
+              className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
+            />
+            {/* Close Button */}
+            <button
+              onClick={closePostModal}
+              className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition backdrop-blur-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          {/* Backdrop Click to Close */}
+          <div className="absolute inset-0 -z-10" onClick={closePostModal}></div>
+        </div>
+      )}
+
+      {/* --- REELS VIDEO MODAL --- */}
+      {selectedReel && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-sm aspect-[9/16] bg-black rounded-xl overflow-hidden shadow-2xl">
+            <video
+              src={selectedReel.video_url}
+              className="w-full h-full object-cover"
+              controls
+              autoPlay
+              loop
+              playsInline
+            />
+            {/* Close Button */}
+            <button
+              onClick={closeReelModal}
+              className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition backdrop-blur-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          {/* Backdrop Click to Close */}
+          <div className="absolute inset-0 -z-10" onClick={closeReelModal}></div>
+        </div>
+      )}
+
       {/* --- HEADER SECTION --- */}
       <div className="flex flex-col items-center pt-10 pb-8 px-4">
         {/* Avatar */}
@@ -100,58 +247,228 @@ export default function ProfileView() {
           </div>
           <div className="w-[1px] h-8 bg-white/10" />
           <div className="text-center">
-            <span className="block font-bold text-xl text-white">{profile.followers || 0}</span>
-            <span className="text-xs text-white/40 uppercase tracking-wider">Followers</span>
+            <span className="block font-bold text-xl text-white">{profile.reels?.length || 0}</span>
+            <span className="text-xs text-white/40 uppercase tracking-wider">Reels</span>
           </div>
           <div className="w-[1px] h-8 bg-white/10" />
           <div className="text-center">
-            <span className="block font-bold text-xl text-white">{profile.following || 0}</span>
-            <span className="text-xs text-white/40 uppercase tracking-wider">Following</span>
+            <span className="block font-bold text-xl text-white">{profile.followers || 0}</span>
+            <span className="text-xs text-white/40 uppercase tracking-wider">Followers</span>
           </div>
         </div>
       </div>
 
-      {/* --- GRID HEADER --- */}
+      {/* --- TAB NAVIGATION --- */}
       <div className="border-t border-white/10 mt-2">
-        <div className="flex justify-center gap-2 py-4 border-t border-white text-xs font-bold tracking-widest uppercase">
+        <div className="flex justify-center gap-8 md:gap-12 py-4">
+          <button
+            onClick={() => setActiveTab("posts")}
+            className={`flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-all pb-1 ${
+              activeTab === "posts"
+                ? "text-white border-b-2 border-teal-500"
+                : "text-white/40 hover:text-white/60"
+            }`}
+          >
             <Grid size={16} />
             <span>Posts</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("reels")}
+            className={`flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-all pb-1 ${
+              activeTab === "reels"
+                ? "text-white border-b-2 border-teal-500"
+                : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Film size={16} />
+            <span>Reels</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("saved")}
+            className={`flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-all pb-1 ${
+              activeTab === "saved"
+                ? "text-white border-b-2 border-teal-500"
+                : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Bookmark size={16} />
+            <span>Saved</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("bookings")}
+            className={`flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-all pb-1 ${
+              activeTab === "bookings"
+                ? "text-white border-b-2 border-teal-500"
+                : "text-white/40 hover:text-white/60"
+            }`}
+          >
+            <Ticket size={16} />
+            <span>Bookings</span>
+          </button>
         </div>
       </div>
 
       {/* --- POSTS GRID --- */}
-      <div className="grid grid-cols-3 gap-1 md:gap-4 md:px-4">
-        {profile.posts.length === 0 ? (
-            <div className="col-span-3 text-center py-20 text-white/30">
-                No posts yet. Upload one!
-            </div>
-        ) : (
-            profile.posts.map((post) => (
-            <div key={post.id} className="relative aspect-square group bg-zinc-900 rounded-sm md:rounded-xl overflow-hidden cursor-pointer">
-                {/* Image */}
-                <img 
-                  src={post.imageUrl} 
-                  alt="Post" 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                />
-                
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(post.id);
-                        }}
-                        className="p-3 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition transform hover:scale-110"
-                        title="Delete Post"
-                    >
-                        <Trash2 size={20} />
-                    </button>
-                </div>
-            </div>
-            ))
-        )}
-      </div>
+      {activeTab === "posts" && (
+        <div className="grid grid-cols-3 gap-1 md:gap-4 md:px-4">
+          {profile.posts.length === 0 ? (
+              <div className="col-span-3 text-center py-20 text-white/30">
+                  No posts yet. Upload one!
+              </div>
+          ) : (
+              profile.posts.map((post) => (
+              <div 
+                  key={post.id} 
+                  onClick={() => handlePostClick(post)}
+                  className="relative aspect-square group bg-zinc-900 rounded-sm md:rounded-xl overflow-hidden cursor-pointer"
+              >
+                  <img 
+                    src={post.imageUrl} 
+                    alt="Post" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button 
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(post.id);
+                          }}
+                          className="p-3 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition transform hover:scale-110"
+                          title="Delete Post"
+                      >
+                          <Trash2 size={20} />
+                      </button>
+                  </div>
+              </div>
+              ))
+          )}
+        </div>
+      )}
+
+      {/* --- REELS GRID --- */}
+      {activeTab === "reels" && (
+        <div className="grid grid-cols-3 gap-1 md:gap-4 md:px-4">
+          {!profile.reels || profile.reels.length === 0 ? (
+              <div className="col-span-3 text-center py-20 text-white/30">
+                  No reels yet. Upload one!
+              </div>
+          ) : (
+              profile.reels.map((reel) => (
+              <div 
+                  key={reel.id} 
+                  onClick={() => handleReelClick(reel)}
+                  className="relative aspect-[9/16] group bg-zinc-900 rounded-sm md:rounded-xl overflow-hidden cursor-pointer"
+              >
+                  <MediaPreview 
+                    image={reel.image_url} 
+                    video={reel.video_url}
+                    alt="Reel" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Play size={24} className="text-white fill-white ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                      <button 
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteReel(reel.id);
+                          }}
+                          className="p-3 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition transform hover:scale-110"
+                          title="Delete Reel"
+                      >
+                          <Trash2 size={20} />
+                      </button>
+                  </div>
+              </div>
+              ))
+          )}
+        </div>
+      )}
+
+      {/* --- SAVED GRID --- */}
+      {activeTab === "saved" && (
+        <div className="grid grid-cols-3 gap-1 md:gap-4 md:px-4">
+          {!profile.savedReels || profile.savedReels.length === 0 ? (
+              <div className="col-span-3 text-center py-20 text-white/30">
+                  No saved reels yet.
+              </div>
+          ) : (
+              profile.savedReels.map((item) => (
+              <div 
+                  key={item.id} 
+                  onClick={() => handleReelClick(item.reel)}
+                  className="relative aspect-[9/16] group bg-zinc-900 rounded-sm md:rounded-xl overflow-hidden cursor-pointer"
+              >
+                  {/* Thumbnail */}
+                  <MediaPreview 
+                    image={item.reel.image_url} 
+                    video={item.reel.video_url}
+                    alt="Reel" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  
+                  {/* Play Icon Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Play size={24} className="text-white fill-white ml-1" />
+                    </div>
+                  </div>
+              </div>
+              ))
+          )}
+        </div>
+      )}
+
+      {/* --- BOOKINGS LIST --- */}
+      {activeTab === "bookings" && (
+          <div className="px-4">
+              {bookingsLoading ? (
+                  <div className="text-center py-20 text-white/30">Loading bookings...</div>
+              ) : bookings.length === 0 ? (
+                  <div className="text-center py-20 text-white/30">No bookings yet.</div>
+              ) : (
+                  <div className="space-y-4">
+                      {bookings.map((booking) => (
+                          <div key={booking.id} className="bg-zinc-900 rounded-xl p-4 flex gap-4 border border-white/5">
+                              {/* Thumb */}
+                               <div className="w-20 h-20 bg-black rounded-lg overflow-hidden shrink-0">
+                                   <MediaPreview 
+                                     image={booking.reel.image_url} 
+                                     video={booking.reel.video_url}
+                                     alt="Reel" 
+                                     className="w-full h-full object-cover" 
+                                   />
+                              </div>
+                              
+                              {/* Details */}
+                              <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-white mb-1 truncate">{booking.reel.title}</h4>
+                                  <div className="flex items-center gap-2 text-xs text-white/60 mb-2">
+                                      <CalIcon size={12} />
+                                      <span>{new Date(booking.bookingDate).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex gap-4 text-xs text-white/80">
+                                      <span>{booking.guests} Guests</span>
+                                      <span className="font-bold text-teal-400">₹{booking.totalPrice}</span>
+                                  </div>
+                              </div>
+
+                              {/* Status */}
+                              <div className="flex flex-col items-end justify-between">
+                                  <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-bold uppercase rounded-md border border-green-500/30">
+                                      {booking.status}
+                                  </span>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              )}
+          </div>
+      )}
     </div>
   );
 }

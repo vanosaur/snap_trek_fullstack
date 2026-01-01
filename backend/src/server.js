@@ -9,6 +9,9 @@ import postFeedRoutes from "./routes/postFeedRoutes.js";
 import storyRoutes from "./routes/storyRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+
 
 import dotenv from "dotenv";
 dotenv.config({ path: "../.env" });
@@ -63,6 +66,13 @@ app.use("/api/postfeed", postFeedRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/chat", chatRoutes);
+
+app.get("/", (req, res) => {
+  res.send("🚀 SnapTrek Backend Active (API at /api)");
+});
+
 
 // --------------------------------
 // 4️⃣ START SERVER
@@ -71,4 +81,6 @@ const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log("✅ Chat routes registered at /api/chat");
 });
+

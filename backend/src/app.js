@@ -4,6 +4,7 @@ import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import reelRoutes from "./routes/reelRoutes.js";
 import storyRoutes from "./routes/storyRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/reels", reelRoutes);
 app.use("/api/stories", storyRoutes);
+app.use("/api/chat", chatRoutes);
 
 
 // ✅ Test route
