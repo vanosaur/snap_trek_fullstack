@@ -14,6 +14,12 @@ import chatRoutes from "./routes/chatRoutes.js";
 
 const app = express();
 
+// ✅ Log all requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 // ✅ Production-ready CORS
 const allowedOrigins = [
   "https://snap-trek-fullstack.vercel.app",
@@ -47,6 +53,16 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/chat", chatRoutes);
+
+// ✅ Verification Route (to confirm synchronization)
+app.get("/api/v2/verify", (req, res) => {
+  res.json({
+    version: "2.0.1",
+    timestamp: new Date().toISOString(),
+    message: "✅ SUCCESS: You are hitting the NEW backend in /backend folder",
+    routes: ["/api/reels", "/api/bookings", "/api/users"]
+  });
+});
 
 // ✅ Diagnostic Route
 app.get("/", (req, res) => {

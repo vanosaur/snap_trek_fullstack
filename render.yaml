@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: snap-trek-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - fromGroup: backend-secrets # Assuming user has a secret group for DATABASE_URL etc.
